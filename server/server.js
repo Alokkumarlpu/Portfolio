@@ -15,7 +15,7 @@ app.use(cors({
   origin: [
     'http://localhost:5173',
     'http://localhost:3000',
-    'https://your-actual-vercel-url.vercel.app'
+    'https://aportfolio-mu.vercel.app'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
