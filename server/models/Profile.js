@@ -23,6 +23,11 @@ const profileSchema = new mongoose.Schema({
     description: String,
     date: String,
     icon: String
+  }],
+  certificates: [{
+    title: String,
+    issuer: String,
+    date: String
   }]
 }, {
   timestamps: true
