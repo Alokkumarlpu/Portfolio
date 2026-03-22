@@ -1,8 +1,5 @@
+require('dotenv').config();
 const path = require('path');
-const dotenv = require('dotenv');
-// LOAD DOTENV FIRST BEFORE ANYTHING ELSE
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
-
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
@@ -13,12 +10,31 @@ connectDB();
 
 const app = express();
 
+// Fix CORS
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173'
+  origin: [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'https://your-actual-vercel-url.vercel.app'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
+
 app.use(express.json());
 
-// Routes will be mounted here
+// Add health route BEFORE other routes
+app.get('/api/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    message: 'Server is running',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  })
+});
+
+// Routes
 app.use('/api/projects', require('./routes/projectRoutes'));
 app.use('/api/contact', require('./routes/contactRoutes'));
 app.use('/api/auth', require('./routes/authRoutes'));
@@ -46,7 +62,19 @@ app.use(notFound);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
-
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+
+  // Keep-alive ping for Render free tier
+  const renderUrl = process.env.RENDER_URL;
+  if (renderUrl) {
+    setInterval(async () => {
+      try {
+        await fetch(`${renderUrl}/api/health`);
+        console.log('Keep-alive ping sent ✅');
+      } catch (err) {
+        console.log('Ping failed:', err.message);
+      }
+    }, 14 * 60 * 1000);
+  }
 });
