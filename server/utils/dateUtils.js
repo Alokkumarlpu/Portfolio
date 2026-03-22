@@ -1,4 +1,4 @@
-const parseMonthYear = (dateString) => {
+export const parseMonthYear = (dateString) => {
   if (!dateString) return new Date(0);
   
   const months = {
@@ -24,5 +24,3 @@ const parseMonthYear = (dateString) => {
 
   return new Date(year, month, 1);
 };
-
-module.exports = { parseMonthYear };

@@ -1,9 +1,9 @@
-require('dotenv').config({ path: '../.env' });
-const mongoose = require('mongoose');
-const Profile = require('./models/Profile');
-const Skill = require('./models/Skill');
-const Experience = require('./models/Experience');
-const Project = require('./models/Project');
+import './config/env.js';
+import mongoose from 'mongoose';
+import Profile from './models/Profile.js';
+import Skill from './models/Skill.js';
+import Experience from './models/Experience.js';
+import Project from './models/Project.js';
 
 const connectDB = async () => {
     try {
@@ -103,9 +103,6 @@ const seedData = async () => {
         await Skill.insertMany(skillsToInsert);
 
         console.log('Seeding Experience...');
-        await Experience.deleteMany({});
-        console.log('Old experience/education cleared');
-
         const expToInsert = [
             {
                 title: "Web Development Intern",
@@ -132,7 +129,7 @@ const seedData = async () => {
               company: "Lovely Professional University",
               location: "Phagwara, Punjab",
               type: "Education",
-              startDate: "2023-08-01",
+              startDate: new Date("2023-08-01"),
               endDate: null,
               current: true,
               description: "Pursuing B.Tech in CSE with CGPA 7.06. Specializing in full-stack development, algorithms, and software engineering.",
@@ -143,8 +140,8 @@ const seedData = async () => {
               company: "P.L.S College",
               location: "Patna, Bihar",
               type: "Education",
-              startDate: "2022-05-01",
-              endDate: "2023-05-31",
+              startDate: new Date("2022-05-01"),
+              endDate: new Date("2023-05-31"),
               current: false,
               description: "Completed Intermediate with Physics, Chemistry and Mathematics (PCM) stream. Percentage: 64%",
               order: 4
@@ -154,8 +151,8 @@ const seedData = async () => {
               company: "Bal Vidya Niketan",
               location: "Patna, Bihar",
               type: "Education",
-              startDate: "2020-03-01",
-              endDate: "2021-04-30",
+              startDate: new Date("2020-03-01"),
+              endDate: new Date("2021-04-30"),
               current: false,
               description: "Completed Secondary education with strong foundational knowledge across all subjects. Percentage: 69%",
               order: 5

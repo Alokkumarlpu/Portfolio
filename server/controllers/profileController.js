@@ -1,6 +1,6 @@
-const Profile = require('../models/Profile');
+import Profile from '../models/Profile.js';
 
-const getProfile = async (req, res, next) => {
+export const getProfile = async (req, res, next) => {
   try {
     let profile = await Profile.findOne();
     if (!profile) {
@@ -12,7 +12,7 @@ const getProfile = async (req, res, next) => {
   }
 };
 
-const updateProfile = async (req, res, next) => {
+export const updateProfile = async (req, res, next) => {
   try {
     let profile = await Profile.findOne();
     if (!profile) {
@@ -49,7 +49,7 @@ const updateProfile = async (req, res, next) => {
   }
 };
 
-const uploadProfileImage = async (req, res, next) => {
+export const uploadProfileImage = async (req, res, next) => {
   try {
     if (!req.file) {
       return res.status(400).json({
@@ -82,7 +82,7 @@ const uploadProfileImage = async (req, res, next) => {
   }
 };
 
-const uploadResumePDF = async (req, res, next) => {
+export const uploadResumePDF = async (req, res, next) => {
   try {
     if (!req.file) {
       return res.status(400).json({
@@ -113,11 +113,4 @@ const uploadResumePDF = async (req, res, next) => {
       message: error.message
     });
   }
-};
-
-module.exports = {
-  getProfile,
-  updateProfile,
-  uploadProfileImage,
-  uploadResumePDF
 };

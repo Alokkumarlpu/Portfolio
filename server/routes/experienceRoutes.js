@@ -1,7 +1,7 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const { getAllExperience, createExperience, updateExperience, deleteExperience } = require('../controllers/experienceController');
-const { protect, admin } = require('../middleware/authMiddleware');
+import { getAllExperience, createExperience, updateExperience, deleteExperience } from '../controllers/experienceController.js';
+import { protect, admin } from '../middleware/authMiddleware.js';
 
 router.route('/')
   .get(getAllExperience)
@@ -11,4 +11,4 @@ router.route('/:id')
   .put(protect, admin, updateExperience)
   .delete(protect, admin, deleteExperience);
 
-module.exports = router;
+export default router;

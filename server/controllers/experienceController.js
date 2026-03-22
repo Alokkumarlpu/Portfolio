@@ -1,6 +1,6 @@
-const Experience = require('../models/Experience');
+import Experience from '../models/Experience.js';
 
-const getAllExperience = async (req, res, next) => {
+export const getAllExperience = async (req, res, next) => {
   try {
     const experiences = await Experience.find().sort({ order: 1, startDate: -1 });
     res.json(experiences);
@@ -9,7 +9,7 @@ const getAllExperience = async (req, res, next) => {
   }
 };
 
-const createExperience = async (req, res, next) => {
+export const createExperience = async (req, res, next) => {
   try {
     const exp = new Experience(req.body);
     await exp.save();
@@ -19,7 +19,7 @@ const createExperience = async (req, res, next) => {
   }
 };
 
-const updateExperience = async (req, res, next) => {
+export const updateExperience = async (req, res, next) => {
   try {
     const exp = await Experience.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!exp) {
@@ -32,7 +32,7 @@ const updateExperience = async (req, res, next) => {
   }
 };
 
-const deleteExperience = async (req, res, next) => {
+export const deleteExperience = async (req, res, next) => {
   try {
     const exp = await Experience.findById(req.params.id);
     if (!exp) {
@@ -45,5 +45,3 @@ const deleteExperience = async (req, res, next) => {
     next(error);
   }
 };
-
-module.exports = { getAllExperience, createExperience, updateExperience, deleteExperience };

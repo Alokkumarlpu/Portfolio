@@ -1,4 +1,4 @@
-const transformDriveUrl = (url) => {
+export const transformDriveUrl = (url) => {
   if (!url || !url.includes('drive.google.com')) return url;
   
   // Extract file ID: works for /d/FILE_ID or ?id=FILE_ID
@@ -8,5 +8,3 @@ const transformDriveUrl = (url) => {
   }
   return url;
 };
-
-module.exports = { transformDriveUrl };

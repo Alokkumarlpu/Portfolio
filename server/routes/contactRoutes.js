@@ -1,13 +1,13 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const {
+import {
   submitContact,
   getAllMessages,
   markAsRead,
-} = require('../controllers/contactController');
-const { protect } = require('../middleware/authMiddleware');
+} from '../controllers/contactController.js';
+import { protect } from '../middleware/authMiddleware.js';
 
 router.route('/').post(submitContact).get(protect, getAllMessages);
 router.route('/:id').put(protect, markAsRead);
 
-module.exports = router;
+export default router;

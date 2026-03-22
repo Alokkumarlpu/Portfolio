@@ -1,6 +1,6 @@
-const Skill = require('../models/Skill');
+import Skill from '../models/Skill.js';
 
-const getAllSkills = async (req, res, next) => {
+export const getAllSkills = async (req, res, next) => {
   try {
     const skills = await Skill.find().sort('order');
     res.json(skills);
@@ -9,7 +9,7 @@ const getAllSkills = async (req, res, next) => {
   }
 };
 
-const createSkill = async (req, res, next) => {
+export const createSkill = async (req, res, next) => {
   try {
     const skill = new Skill(req.body);
     await skill.save();
@@ -19,7 +19,7 @@ const createSkill = async (req, res, next) => {
   }
 };
 
-const updateSkill = async (req, res, next) => {
+export const updateSkill = async (req, res, next) => {
   try {
     const skill = await Skill.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!skill) {
@@ -32,7 +32,7 @@ const updateSkill = async (req, res, next) => {
   }
 };
 
-const deleteSkill = async (req, res, next) => {
+export const deleteSkill = async (req, res, next) => {
   try {
     const skill = await Skill.findById(req.params.id);
     if (!skill) {
@@ -45,5 +45,3 @@ const deleteSkill = async (req, res, next) => {
     next(error);
   }
 };
-
-module.exports = { getAllSkills, createSkill, updateSkill, deleteSkill };

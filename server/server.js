@@ -1,10 +1,20 @@
-require('dotenv').config();
-const path = require('path');
-const express = require('express');
-const cors = require('cors');
-const connectDB = require('./config/db');
-const { notFound, errorHandler } = require('./middleware/errorMiddleware');
-const { sendContactEmail } = require('./utils/sendEmail');
+import './config/env.js';
+import path from 'path';
+import express from 'express';
+import cors from 'cors';
+import connectDB from './config/db.js';
+import { notFound, errorHandler } from './middleware/errorMiddleware.js';
+import { sendContactEmail } from './utils/sendEmail.js';
+
+// Route imports
+import projectRoutes from './routes/projectRoutes.js';
+import contactRoutes from './routes/contactRoutes.js';
+import authRoutes from './routes/authRoutes.js';
+import profileRoutes from './routes/profileRoutes.js';
+import skillRoutes from './routes/skillRoutes.js';
+import experienceRoutes from './routes/experienceRoutes.js';
+import certificateRoutes from './routes/certificateRoutes.js';
+import achievementRoutes from './routes/achievementRoutes.js';
 
 connectDB();
 
@@ -35,14 +45,14 @@ app.get('/api/health', (req, res) => {
 });
 
 // Routes
-app.use('/api/projects', require('./routes/projectRoutes'));
-app.use('/api/contact', require('./routes/contactRoutes'));
-app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/profile', require('./routes/profileRoutes'));
-app.use('/api/skills', require('./routes/skillRoutes'));
-app.use('/api/experience', require('./routes/experienceRoutes'));
-app.use('/api/certificates', require('./routes/certificateRoutes'));
-app.use('/api/achievements', require('./routes/achievementRoutes'));
+app.use('/api/projects', projectRoutes);
+app.use('/api/contact', contactRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/profile', profileRoutes);
+app.use('/api/skills', skillRoutes);
+app.use('/api/experience', experienceRoutes);
+app.use('/api/certificates', certificateRoutes);
+app.use('/api/achievements', achievementRoutes);
 
 app.get('/api/test-email', async (req, res) => {
   try {

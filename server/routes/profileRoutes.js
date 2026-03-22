@@ -1,8 +1,8 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const { getProfile, updateProfile, uploadProfileImage, uploadResumePDF } = require('../controllers/profileController');
-const { protect, admin } = require('../middleware/authMiddleware');
-const { uploadImage, uploadResume } = require('../utils/cloudinary');
+import { getProfile, updateProfile, uploadProfileImage, uploadResumePDF } from '../controllers/profileController.js';
+import { protect, admin } from '../middleware/authMiddleware.js';
+import { uploadImage, uploadResume } from '../utils/cloudinary.js';
 
 router.route('/')
   .get(getProfile)
@@ -11,4 +11,4 @@ router.route('/')
 router.post('/upload-image', protect, admin, uploadImage.single('profileImage'), uploadProfileImage);
 router.post('/upload-resume', protect, admin, uploadResume.single('resume'), uploadResumePDF);
 
-module.exports = router;
+export default router;

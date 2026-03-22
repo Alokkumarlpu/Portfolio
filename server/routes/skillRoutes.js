@@ -1,7 +1,7 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const { getAllSkills, createSkill, updateSkill, deleteSkill } = require('../controllers/skillController');
-const { protect, admin } = require('../middleware/authMiddleware');
+import { getAllSkills, createSkill, updateSkill, deleteSkill } from '../controllers/skillController.js';
+import { protect, admin } from '../middleware/authMiddleware.js';
 
 router.route('/')
   .get(getAllSkills)
@@ -11,4 +11,4 @@ router.route('/:id')
   .put(protect, admin, updateSkill)
   .delete(protect, admin, deleteSkill);
 
-module.exports = router;
+export default router;

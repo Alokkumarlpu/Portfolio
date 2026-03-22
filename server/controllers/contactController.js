@@ -1,7 +1,7 @@
-const Contact = require('../models/Contact');
-const { sendContactEmail } = require('../utils/sendEmail');
+import Contact from '../models/Contact.js';
+import { sendContactEmail } from '../utils/sendEmail.js';
 
-const submitContact = async (req, res, next) => {
+export const submitContact = async (req, res, next) => {
   try {
     const { name, email, message } = req.body;
     console.log('Form data:', { name, email, message });
@@ -20,7 +20,7 @@ const submitContact = async (req, res, next) => {
   }
 };
 
-const getAllMessages = async (req, res, next) => {
+export const getAllMessages = async (req, res, next) => {
   try {
     const messages = await Contact.find({}).sort({ createdAt: -1 });
     res.json(messages);
@@ -29,7 +29,7 @@ const getAllMessages = async (req, res, next) => {
   }
 };
 
-const markAsRead = async (req, res, next) => {
+export const markAsRead = async (req, res, next) => {
   try {
     const message = await Contact.findById(req.params.id);
 
@@ -45,5 +45,3 @@ const markAsRead = async (req, res, next) => {
     next(error);
   }
 };
-
-module.exports = { submitContact, getAllMessages, markAsRead };

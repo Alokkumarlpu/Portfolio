@@ -1,6 +1,6 @@
-const Admin = require('../models/Admin');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
+import Admin from '../models/Admin.js';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -8,7 +8,7 @@ const generateToken = (id) => {
   });
 };
 
-const login = async (req, res, next) => {
+export const login = async (req, res, next) => {
   try {
     const { username, password } = req.body;
 
@@ -28,5 +28,3 @@ const login = async (req, res, next) => {
     next(error);
   }
 };
-
-module.exports = { login };

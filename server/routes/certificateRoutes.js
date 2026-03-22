@@ -1,8 +1,8 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const Certificate = require('../models/Certificate');
-const { transformDriveUrl } = require('../utils/googleDrive');
-const { parseMonthYear } = require('../utils/dateUtils');
+import Certificate from '../models/Certificate.js';
+import { transformDriveUrl } from '../utils/googleDrive.js';
+import { parseMonthYear } from '../utils/dateUtils.js';
 
 // Get all certificates
 router.get('/', async (req, res) => {
@@ -57,4 +57,4 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

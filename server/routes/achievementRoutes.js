@@ -1,7 +1,7 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const { getAllAchievements, createAchievement, updateAchievement, deleteAchievement } = require('../controllers/achievementController');
-const { protect, admin } = require('../middleware/authMiddleware');
+import { getAllAchievements, createAchievement, updateAchievement, deleteAchievement } from '../controllers/achievementController.js';
+import { protect, admin } from '../middleware/authMiddleware.js';
 
 router.route('/')
   .get(getAllAchievements)
@@ -11,4 +11,4 @@ router.route('/:id')
   .put(protect, admin, updateAchievement)
   .delete(protect, admin, deleteAchievement);
 
-module.exports = router;
+export default router;
