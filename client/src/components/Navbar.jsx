@@ -1,14 +1,13 @@
 import { useContext, useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { ThemeContext } from '../context/ThemeContext';
-import { FiSun, FiMoon, FiMenu, FiX } from 'react-icons/fi';
-import { motion, AnimatePresence, useScroll, useSpring } from 'framer-motion';
+import { FiMenu, FiX } from 'react-icons/fi';
+import { motion, AnimatePresence, useScroll, useSpring, useTransform } from 'framer-motion';
 
 const Navbar = () => {
-  const { theme, toggleTheme } = useContext(ThemeContext);
   const [isOpen, setIsOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
-  const { scrollYProgress } = useScroll();
+  const { scrollY, scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, {
     stiffness: 100,
     damping: 30,
@@ -19,6 +18,9 @@ const Navbar = () => {
 
   useEffect(() => {
     setActiveHash(window.location.hash);
+    const handleScroll = () => setIsScrolled(window.scrollY > 50);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, [location]);
 
   const navLinks = [
@@ -39,22 +41,44 @@ const Navbar = () => {
 
   return (
     <>
+      <style>
+        {`
+          @keyframes logoGlow {
+            0%, 100% { text-shadow: 0 0 10px rgba(124, 58, 237, 0.4); }
+            50% { text-shadow: 0 0 25px rgba(124, 58, 237, 0.8), 0 0 40px rgba(6, 182, 212, 0.4); }
+          }
+          .logo-pulsing {
+            animation: logoGlow 3s infinite ease-in-out;
+          }
+        `}
+      </style>
+      
       {/* Scroll Progress Bar */}
       <motion.div
-        className="fixed top-0 left-0 right-0 h-[3px] z-[60] bg-gradient-to-r from-[#7c3aed] to-[#06b6d4] drop-shadow-[0_0_8px_rgba(124,58,237,0.5)] origin-left"
+        className="fixed top-0 left-0 right-0 h-[2px] z-[9999] bg-gradient-to-r from-[#7c3aed] to-[#06b6d4] origin-left"
         style={{ scaleX }}
       />
 
-      <nav className="fixed w-full top-0 z-50 backdrop-blur-xl bg-white/70 dark:bg-[#0a0a1a]/40 border-b border-gray-200 dark:border-white/5 transition-colors duration-300 shadow-sm">
+      <style>{`
+        @keyframes logoBreathe {
+          0%, 100% { text-shadow: 0 0 5px rgba(124,58,237,0.2); }
+          50% { text-shadow: 0 0 20px rgba(124,58,237,0.6), 0 0 30px rgba(6,182,212,0.4); }
+        }
+        .logo-breathe {
+          animation: logoBreathe 3s infinite ease-in-out;
+        }
+      `}</style>
+
+      <nav className={`fixed w-full top-0 z-50 transition-all duration-300 ${isScrolled ? 'py-2 backdrop-blur-xl bg-white/70 dark:bg-[#0a0a1a]/60 shadow-lg' : 'py-4 backdrop-blur-sm bg-white/40 dark:bg-transparent'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
+          <div className={`flex items-center justify-between transition-all duration-300 ${isScrolled ? 'h-14' : 'h-20'}`}>
             {/* Logo */}
             <div className="flex-shrink-0">
               <NavLink 
                 to="/" 
-                className="text-2xl md:text-3xl font-heading font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-[#7c3aed] to-[#06b6d4] drop-shadow-[0_0_15px_rgba(124,58,237,0.4)]"
+                className="text-2xl md:text-3xl font-heading font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-[#7c3aed] to-[#06b6d4] logo-breathe hover:tracking-[0.05em] transition-all duration-300"
               >
-                Alok Kumar
+                AK
               </NavLink>
             </div>
             
@@ -62,42 +86,28 @@ const Navbar = () => {
             <div className="hidden md:block">
               <div className="ml-10 flex items-center space-x-6">
                 {navLinks.map((link) => (
-                  <a
+                  <motion.a
                     key={link.name}
                     href={link.path}
-                    className="relative group px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 transition-all duration-300"
-                    style={{ perspective: '500px' }}
+                    whileHover={{ x: 4, letterSpacing: '0.05em' }}
+                    className="relative group px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 transition-all duration-300 tracking-[0.05em]"
                   >
-                    <div className="group-hover:-rotate-x-[8deg] group-hover:text-[#7c3aed] transition-transform duration-300 ease-out transform-gpu origin-bottom">
-                      {link.name}
-                    </div>
+                    {link.name}
                     {/* Underline Slide / Active State */}
-                    <div className={`absolute bottom-0 left-0 w-full h-[2px] bg-[#7c3aed] drop-shadow-[0_0_8px_rgba(124,58,237,0.6)] origin-left transition-transform duration-300 ease-out ${isActive(link.path) ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`} />
-                  </a>
+                    <div className={`absolute bottom-0 left-3 right-3 h-[2px] bg-gradient-to-r from-[#7c3aed] to-[#06b6d4] shadow-[0_0_8px_rgba(124,58,237,0.6)] origin-left transition-transform duration-300 ease-out ${isActive(link.path) ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`} />
+                    {isActive(link.path) && (
+                      <motion.div 
+                        layoutId="navUnderline"
+                        className="absolute -bottom-1 left-0 w-full h-1 bg-[#7c3aed] blur-md opacity-20"
+                      />
+                    )}
+                  </motion.a>
                 ))}
-                
-                <motion.button
-                  whileTap={{ rotateY: 360, scale: 0.9 }}
-                  transition={{ duration: 0.5 }}
-                  onClick={toggleTheme}
-                  className="p-2 ml-4 rounded-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 hover:text-[#06b6d4] hover:border-[#06b6d4] transition-all duration-300 shadow-sm outline-none"
-                  aria-label="Toggle Theme"
-                >
-                  {theme === 'dark' ? <FiSun className="w-5 h-5 drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]" /> : <FiMoon className="w-5 h-5" />}
-                </motion.button>
               </div>
             </div>
             
             {/* Mobile Menu Button */}
             <div className="-mr-2 flex items-center md:hidden z-50">
-              <motion.button
-                whileTap={{ rotateY: 360, scale: 0.9 }}
-                transition={{ duration: 0.5 }}
-                onClick={toggleTheme}
-                className="p-2 mr-2 rounded-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 transition-all shadow-sm outline-none"
-              >
-                {theme === 'dark' ? <FiSun className="w-5 h-5" /> : <FiMoon className="w-5 h-5" />}
-              </motion.button>
               <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="inline-flex items-center justify-center p-2 rounded-md hover:bg-gray-200 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 transition-colors z-[60] relative outline-none"

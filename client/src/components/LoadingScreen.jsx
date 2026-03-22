@@ -1,86 +1,95 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const LoadingScreen = () => {
-  const [isLoading, setIsLoading] = useState(true);
+const LoadingScreen = ({ onComplete }) => {
   const [progress, setProgress] = useState(0);
+  const [show, setShow] = useState(false);
 
   useEffect(() => {
-    // Check session storage to only show on first visit
     const hasVisited = sessionStorage.getItem('hasVisited');
-    if (hasVisited) {
-      setIsLoading(false);
-      return;
+    if (!hasVisited) {
+      setShow(true);
+      sessionStorage.setItem('hasVisited', 'true');
+    } else {
+      if (onComplete) onComplete();
     }
 
-    const duration = 2000;
-    const interval = 20;
-    let currentProgress = 0;
-    
     const timer = setInterval(() => {
-      currentProgress += (100 / (duration / interval));
-      if (currentProgress >= 100) {
-        currentProgress = 100;
-        clearInterval(timer);
-        setTimeout(() => {
-          setIsLoading(false);
-          sessionStorage.setItem('hasVisited', 'true');
-        }, 500); 
-      }
-      setProgress(currentProgress);
-    }, interval);
+      setProgress((oldProgress) => {
+        if (oldProgress >= 100) {
+          clearInterval(timer);
+          setTimeout(() => {
+            setShow(false);
+            if (onComplete) onComplete();
+          }, 500);
+          return 100;
+        }
+        return oldProgress + 1;
+      });
+    }, 20);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [onComplete]);
 
-  const nameLetters = "Alok Kumar".split('');
+  const name = "ALOK KUMAR";
 
   return (
     <AnimatePresence>
-      {isLoading && (
+      {show && (
         <motion.div
-          key="loading-screen"
           initial={{ y: 0 }}
           exit={{ y: '-100%' }}
           transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }}
-          className="fixed inset-0 z-[100000] flex flex-col items-center justify-center bg-[#050510]"
+          className="fixed inset-0 z-[10000] bg-[#050510] flex flex-col items-center justify-center p-4 overflow-hidden"
         >
-          {/* Logo / Name */}
-          <div className="flex items-center space-x-2 text-4xl md:text-6xl font-heading font-bold text-white mb-12">
-            <motion.div
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.5, ease: 'easeOut' }}
-              className="text-[#7c3aed] mr-4 drop-shadow-[0_0_15px_rgba(124,58,237,0.5)]"
+          {/* Central Logo */}
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+            className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-dashed border-[#7c3aed]/40 flex items-center justify-center mb-12 relative"
+          >
+            <motion.span 
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-4xl md:text-5xl font-heading font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-[#7c3aed] to-[#06b6d4] drop-shadow-[0_0_15px_rgba(124,58,237,0.5)]"
             >
               AK
-            </motion.div>
-            <div className="flex">
-              {nameLetters.map((letter, i) => (
-                <motion.span
-                  key={i}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.1, delay: 0.5 + i * 0.05 }}
-                  className="bg-clip-text text-transparent bg-gradient-to-r from-[#7c3aed] to-[#06b6d4]"
-                >
-                  {letter === ' ' ? '\u00A0' : letter}
-                </motion.span>
-              ))}
-            </div>
+            </motion.span>
+            
+            {/* Spinning Glow Ring */}
+            <div className="absolute inset-0 rounded-full border-2 border-[#06b6d4] opacity-20 shadow-[0_0_30px_rgba(6,182,212,0.4)]" />
+          </motion.div>
+
+          {/* Name Reveal */}
+          <div className="flex mb-8">
+            {name.split('').map((char, index) => (
+              <motion.span
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.08, duration: 0.5 }}
+                className={`text-2xl md:text-3xl font-heading font-bold tracking-widest text-[#e2e8f0] ${char === ' ' ? 'mr-4' : ''}`}
+              >
+                {char === ' ' ? '\u00A0' : char}
+              </motion.span>
+            ))}
           </div>
 
-          {/* Progress Bar Container */}
-          <div className="w-64 max-w-[80vw] h-1 bg-white/10 rounded-full overflow-hidden absolute bottom-20">
-            <motion.div 
-              className="h-full bg-gradient-to-r from-[#7c3aed] to-[#06b6d4]"
-              style={{ width: `${progress}%` }}
-              layout
+          {/* Loading Bar Container */}
+          <div className="w-64 md:w-80 h-1 bg-white/5 rounded-full overflow-hidden relative mb-4">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#7c3aed] to-[#06b6d4] shadow-[0_0_15px_rgba(124,58,237,0.8)]"
             />
           </div>
-          <div className="absolute bottom-12 text-gray-500 font-mono text-sm tracking-widest">
-            {Math.round(progress)}%
-          </div>
+
+          {/* Percentage */}
+          <motion.span 
+            className="text-sm font-mono text-[#64748b] tracking-[0.2em]"
+          >
+            {progress}%
+          </motion.span>
         </motion.div>
       )}
     </AnimatePresence>

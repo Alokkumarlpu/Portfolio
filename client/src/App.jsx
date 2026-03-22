@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import Navbar from './components/Navbar';
@@ -6,20 +7,21 @@ import Home from './pages/Home';
 import ProjectsPage from './pages/ProjectsPage';
 import AdminDashboard from './pages/AdminDashboard';
 import LoadingScreen from './components/LoadingScreen';
+import CustomCursor from './components/CustomCursor';
+import Lenis from 'lenis';
+import GlobalParticles from './components/GlobalParticles';
 
-const AnimatedRoute = ({ children }) => {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.3, ease: 'easeInOut' }}
-      className="w-full h-full"
-    >
-      {children}
-    </motion.div>
-  );
-};
+const AnimatedRoute = ({ children }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -10 }}
+    transition={{ duration: 0.3, ease: 'easeOut' }}
+    className="w-full h-full"
+  >
+    {children}
+  </motion.div>
+);
 
 const AnimatedRoutes = () => {
   const location = useLocation();
@@ -34,18 +36,63 @@ const AnimatedRoutes = () => {
   );
 };
 
-function App() {
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+};
+
+const App = () => {
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1.4,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smooth: true,
+    });
+
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+    requestAnimationFrame(raf);
+
+    return () => lenis.destroy();
+  }, []);
+
   return (
-    <div className="min-h-screen flex flex-col relative selection:bg-[#7c3aed]/30 selection:text-[#e2e8f0]">
-      <LoadingScreen />
+    <div className="bg-[#050510] min-h-screen text-white selection:bg-[#7c3aed]/30 selection:text-white">
+      <GlobalParticles />
       
-      <Navbar />
-      <main className="flex-grow w-full custom-noise-filter">
-        <AnimatedRoutes />
-      </main>
-      <Footer />
+      {/* Grainy Noise Overlay */}
+      <div className="fixed inset-0 pointer-events-none z-[9999] opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-overlay"></div>
+
+      <AnimatePresence mode="wait">
+        {loading ? (
+          <LoadingScreen onComplete={() => setLoading(false)} key="loading" />
+        ) : (
+          <motion.div
+            key="content"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1 }}
+            className="relative"
+          >
+            <CustomCursor />
+            <ScrollToTop />
+            <Navbar />
+            <main className="relative z-10">
+              <AnimatedRoutes />
+            </main>
+            <Footer />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
-}
+};
 
 export default App;

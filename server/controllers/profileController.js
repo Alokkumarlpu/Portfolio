@@ -25,16 +25,25 @@ const updateProfile = async (req, res, next) => {
       if (req.body[f] !== undefined) profile[f] = req.body[f];
     });
 
+    if (req.body.achievements !== undefined) {
+      console.log('Updating achievements:', req.body.achievements);
+      profile.achievements = req.body.achievements;
+      profile.markModified('achievements');
+    }
+
     if (req.body.socialLinks) {
       profile.socialLinks = { ...profile.socialLinks, ...req.body.socialLinks };
+      profile.markModified('socialLinks');
     }
     
     if (req.body.heroTypingRoles) {
       profile.heroTypingRoles = req.body.heroTypingRoles;
+      profile.markModified('heroTypingRoles');
     }
 
-    await profile.save();
-    res.json(profile);
+    const savedProfile = await profile.save();
+    console.log('Profile saved successfully');
+    res.json(savedProfile);
   } catch (error) {
     next(error);
   }

@@ -53,30 +53,96 @@ const categoryStyles = {
   'Tools': 'from-red-500 to-rose-400',
 };
 
-const SkillItem = ({ skillName }) => {
+const SkillItem = ({ skillName, index, parentHovered }) => {
   const [isHovered, setIsHovered] = useState(false);
   const mapping = skillIconMap[skillName] || { icon: BsCodeSquare, color: '#9CA3AF' };
   const IconComponent = mapping.icon;
 
   return (
-    <div 
+    <motion.div 
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true }}
+      variants={{
+        hidden: { opacity: 0, x: -10 },
+        visible: { opacity: 1, x: 0, transition: { delay: index * 0.05 } }
+      }}
+      animate={parentHovered ? { y: [0, -6, 0] } : { y: 0 }}
+      transition={{ delay: index * 0.04, duration: 0.4, ease: "easeInOut" }}
       className="flex items-center gap-3 p-2 cursor-pointer transition-all duration-300 group rounded-lg hover:bg-white/5"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       <IconComponent 
-        className="text-2xl transition-transform duration-300 transform group-hover:scale-110"
+        className={`text-2xl transition-all duration-300 transform ${isHovered ? 'scale-125' : ''}`}
         style={{ 
           color: mapping.color,
-          filter: isHovered ? `drop-shadow(0 0 10px ${mapping.color})` : 'none'
+          filter: isHovered ? `drop-shadow(0 0 12px ${mapping.color})` : 'none',
+          willChange: 'transform, filter'
         }}
       />
       <span className="text-sm text-gray-400 font-medium group-hover:text-white transition-colors duration-300">
         {skillName}
       </span>
-    </div>
+    </motion.div>
   );
 }
+
+const CategoryCard = ({ category, catIdx }) => {
+  const [isCardHovered, setIsCardHovered] = useState(false);
+  const borderGradient = categoryStyles[category.name] || 'from-gray-500 to-gray-400';
+
+  return (
+    <Tilt 
+      tiltMaxAngleX={8} 
+      tiltMaxAngleY={8} 
+      glareEnable={true} 
+      glareMaxOpacity={0.06}
+      scale={1.02}
+      perspective={1200}
+      onEnter={() => setIsCardHovered(true)}
+      onLeave={() => setIsCardHovered(false)}
+      className="w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] group/tilt"
+    >
+      <motion.div
+        variants={{
+          hidden: { opacity: 0, y: 80 },
+          visible: { 
+            opacity: 1, 
+            y: 0, 
+            transition: { duration: 0.8, ease: "easeOut", delay: catIdx * 0.15 } 
+          }
+        }}
+        className="h-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 md:p-8 hover:border-[#7c3aed]/50 hover:shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all duration-500 relative overflow-hidden will-change-transform"
+      >
+        {/* Gradient Top Border */}
+        <div className={`absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r ${borderGradient}`} />
+        
+        {/* Decorative background glow on hover */}
+        <div className={`absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br ${borderGradient} opacity-0 group-hover/tilt:opacity-20 blur-3xl transition-opacity duration-700 rounded-full`} />
+
+        {/* Card Header */}
+        <motion.div 
+          whileInView={{ textShadow: ["0 0 0px transparent", "0 0 20px rgba(124,58,237,0.5)", "0 0 0px transparent"] }}
+          transition={{ duration: 1.5, delay: 0.5 }}
+          className="flex flex-col items-center text-center mb-6 pointer-events-none"
+        >
+          <div className="text-5xl mb-4 transform group-hover/tilt:scale-125 group-hover/tilt:rotate-12 transition-all duration-500 drop-shadow-xl">{category.emoji}</div>
+          <h3 className={`text-2xl font-bold font-heading bg-clip-text text-transparent bg-gradient-to-r ${borderGradient}`}>
+            {category.name}
+          </h3>
+        </motion.div>
+        
+        {/* Skills Grid */}
+        <div className="grid grid-cols-2 gap-y-3 gap-x-2 relative z-10 w-full">
+          {category.skills.map((skillName, i) => (
+            <SkillItem key={skillName} skillName={skillName} index={i} parentHovered={isCardHovered} />
+          ))}
+        </div>
+      </motion.div>
+    </Tilt>
+  );
+};
 
 const Skills = () => {
   const { data: apiSkills, loading } = useFetch(skillService.getAllSkills);
@@ -88,19 +154,41 @@ const Skills = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
-        {/* Section Heading */}
+        {/* Section Heading - Split Text Effect */}
         <motion.div
-           variants={fadeInUp}
            initial="hidden"
            whileInView="visible"
            viewport={{ once: true, amount: 0.2 }}
            className="text-center mb-20 flex flex-col items-center"
         >
-          <h2 className="text-4xl md:text-5xl font-heading font-extrabold text-[#e2e8f0] mb-4 tracking-tight">
-            My Skills
-          </h2>
-          <p className="text-[#64748b] font-medium mb-6">Technologies I work with</p>
-          <div className="w-24 h-1.5 bg-gradient-to-r from-[#06b6d4] to-[#7c3aed] rounded-full drop-shadow-[0_0_8px_rgba(6,182,212,0.6)]"></div>
+          <div className="flex flex-wrap justify-center overflow-hidden">
+            {"My Skills".split(" ").map((word, i) => (
+              <motion.h2 
+                key={i}
+                variants={{
+                  hidden: { y: 80, opacity: 0 },
+                  visible: { y: 0, opacity: 1, transition: { duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94], delay: i * 0.1 } }
+                }}
+                className="text-4xl md:text-5xl font-heading font-extrabold text-[#e2e8f0] mb-4 tracking-tight mr-4"
+              >
+                {word}
+              </motion.h2>
+            ))}
+          </div>
+          <motion.p 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="text-[#64748b] font-medium mb-6"
+          >
+            Technologies I work with
+          </motion.p>
+          <motion.div 
+            initial={{ width: 0 }}
+            whileInView={{ width: "6rem" }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="w-24 h-1.5 bg-gradient-to-r from-[#06b6d4] to-[#7c3aed] rounded-full drop-shadow-[0_0_8px_rgba(6,182,212,0.6)]"
+          ></motion.div>
         </motion.div>
 
         {loading ? (
@@ -113,46 +201,9 @@ const Skills = () => {
             viewport={{ once: true, amount: 0.1 }}
             className="flex flex-wrap justify-center gap-6"
           >
-            {hardcodedCategories.map((category) => {
-              const borderGradient = categoryStyles[category.name] || 'from-gray-500 to-gray-400';
-              
-              return (
-                <Tilt 
-                  key={category.name}
-                  tiltMaxAngleX={6} 
-                  tiltMaxAngleY={6} 
-                  glareEnable={true} 
-                  glareMaxOpacity={0.08}
-                  className="w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] group/tilt"
-                >
-                  <motion.div
-                    variants={fadeInUp}
-                    className="h-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 md:p-8 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)] transition-all duration-300 relative overflow-hidden"
-                  >
-                    {/* Gradient Top Border */}
-                    <div className={`absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r ${borderGradient}`} />
-                    
-                    {/* Decorative background glow on hover */}
-                    <div className={`absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br ${borderGradient} opacity-0 group-hover/tilt:opacity-10 blur-3xl transition-opacity duration-500 rounded-full`} />
-
-                    {/* Card Header */}
-                    <div className="flex flex-col items-center text-center mb-6">
-                      <div className="text-5xl mb-4 transform group-hover/tilt:scale-110 transition-transform duration-300 drop-shadow-xl">{category.emoji}</div>
-                      <h3 className={`text-2xl font-bold font-heading bg-clip-text text-transparent bg-gradient-to-r ${borderGradient}`}>
-                        {category.name}
-                      </h3>
-                    </div>
-                    
-                    {/* Skills Grid */}
-                    <div className="grid grid-cols-2 gap-y-3 gap-x-2 relative z-10 w-full">
-                      {category.skills.map(skillName => (
-                        <SkillItem key={skillName} skillName={skillName} />
-                      ))}
-                    </div>
-                  </motion.div>
-                </Tilt>
-              );
-            })}
+            {hardcodedCategories.map((category, catIdx) => (
+              <CategoryCard key={category.name} category={category} catIdx={catIdx} />
+            ))}
           </motion.div>
         )}
 

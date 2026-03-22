@@ -19,14 +19,10 @@ const profileSchema = new mongoose.Schema({
   heroTypingRoles: { type: [String], default: ['Developer', 'Designer'] },
   achievements: [{
     title: String,
+    company: String,
     description: String,
     date: String,
     icon: String
-  }],
-  certificates: [{
-    title: String,
-    issuer: String,
-    date: String
   }]
 }, {
   timestamps: true

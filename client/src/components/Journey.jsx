@@ -3,6 +3,7 @@ import { motion, useScroll } from 'framer-motion';
 import useFetch from '../hooks/useFetch';
 import { experienceService } from '../services/experienceService';
 import { profileService } from '../services/profileService';
+import { achievementService } from '../services/achievementService';
 
 const fallbackExperience = [
   {
@@ -107,52 +108,78 @@ const TimelineItem = ({ entry, index }) => {
 
   return (
     <motion.div
-      className="relative pl-8 mb-6"
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-50px' }}
-      transition={{ duration: 0.4, delay: index * 0.1 }}
+      className="relative pl-8 mb-10"
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: '-10% 0px -10% 0px' }}
+      variants={{
+        hidden: { opacity: 0, x: -50 },
+        visible: { 
+          opacity: 1, 
+          x: 0, 
+          transition: { type: 'spring', stiffness: 100, damping: 20, delay: index * 0.1 } 
+        }
+      }}
     >
       {/* Dot — centered on the vertical line at left:0 */}
-      <div className="absolute left-0 top-5 -translate-x-1/2 z-10">
-        {entry.current && (
-          <div className={`absolute inset-0 rounded-full ${dotStyle.ping} animate-ping`} />
-        )}
-        <div className={`relative w-3 h-3 rounded-full border-2 ${dotStyle.dot} ${dotStyle.shadow}`} />
+      <div className="absolute left-0 top-6 -translate-x-1/2 z-20">
+        <motion.div
+          initial={{ scale: 0.5, opacity: 0 }}
+          whileInView={{ scale: 1, opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ type: "spring", stiffness: 300, delay: index * 0.1 + 0.2 }}
+          className="relative"
+        >
+          {entry.current && (
+            <div className={`absolute inset-0 rounded-full ${dotStyle.ping} animate-ping scale-150`} />
+          )}
+          <div className={`relative w-4 h-4 rounded-full border-2 bg-[#0a0a1a] ${dotStyle.dot} ${dotStyle.shadow} transition-transform duration-300 group-hover:scale-125`} />
+        </motion.div>
       </div>
 
       {/* Card */}
-      <div className={`bg-gray-900/60 border border-gray-700/50 border-l-4 ${borderColor} rounded-xl p-4 md:p-5 hover:-translate-y-1 hover:shadow-[0_10px_30px_rgba(124,58,237,0.1)] transition-all duration-300 group`}>
+      <div className={`bg-gray-900/40 backdrop-blur-md border border-gray-700/30 border-l-4 ${borderColor} rounded-2xl p-5 md:p-6 hover:-translate-y-1 hover:shadow-[0_15px_30px_rgba(124,58,237,0.15)] transition-all duration-500 group relative overflow-hidden`}>
+        {/* Glow effect on hover */}
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-blue-500/0 group-hover:from-purple-500/5 group-hover:to-blue-500/5 transition-colors duration-500" />
+        
         {/* Title + Date */}
-        <div className="flex items-start justify-between gap-4 mb-1">
-          <h4 className="font-bold text-white text-base leading-snug group-hover:text-[#06b6d4] transition-colors">
-            {entry.icon && <span className="mr-2">{entry.icon}</span>}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 relative z-10">
+          <h4 className="font-bold text-white text-lg leading-tight group-hover:text-[#06b6d4] transition-colors duration-300">
+            {entry.icon && <span className="mr-2 text-xl">{entry.icon}</span>}
             {entry.title}
           </h4>
           {dateBadge && (
-            <span className="text-xs px-2.5 py-1 rounded-full bg-purple-500/20 text-purple-300 whitespace-nowrap border border-purple-500/30 flex-shrink-0 font-mono font-medium">
+            <motion.span 
+              whileHover={{ scale: 1.05 }}
+              className="text-[10px] px-3 py-1.5 rounded-full bg-purple-500/10 text-purple-300 whitespace-nowrap border border-purple-500/20 flex-shrink-0 font-mono font-bold tracking-wider uppercase shadow-[0_0_10px_rgba(168,85,247,0.1)]"
+            >
               {dateBadge}
-            </span>
+            </motion.span>
           )}
         </div>
 
         {/* Company */}
-        <p className="text-purple-400 text-sm font-medium mb-2">
-          {entry.company}
-          {entry.location && (
-            <span className="text-gray-500 font-normal"> | {entry.location}</span>
-          )}
-        </p>
+        {(entry.company || entry.issuer || entry.organization) && (
+          <p className="text-purple-400 font-semibold mb-3 flex items-center gap-2 relative z-10 text-sm md:text-base">
+            <span className="w-1.5 h-1.5 bg-purple-500 rounded-full flex-shrink-0"></span>
+            <span className="break-words">
+              {entry.company || entry.issuer || entry.organization}
+              {entry.location && (
+                <span className="text-gray-500 font-normal"> | {entry.location}</span>
+              )}
+            </span>
+          </p>
+        )}
 
         {/* Description */}
-        <p className="text-gray-400 text-sm leading-relaxed whitespace-pre-wrap">
+        <p className="text-gray-400 text-sm leading-relaxed whitespace-pre-wrap relative z-10 group-hover:text-gray-300 transition-colors duration-300">
           {entry.description}
         </p>
 
         {/* Type badge */}
         {(entry.type) && (
-          <div className="mt-3">
-            <span className="text-xs px-2 py-0.5 rounded bg-gray-800 text-gray-400 border border-gray-700">
+          <div className="mt-4 relative z-10">
+            <span className="text-[10px] px-2.5 py-1 rounded bg-gray-800/50 text-gray-400 border border-gray-700/50 uppercase tracking-widest font-bold">
               {entry.type}
             </span>
           </div>
@@ -166,26 +193,45 @@ const TimelineSection = ({ heading, entries }) => {
   if (!entries || entries.length === 0) return null;
 
   return (
-    <div className="mb-4">
-      {/* Sub-heading */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        whileInView={{ opacity: 1, scale: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.4 }}
-      >
-        <h3 className="text-2xl font-bold text-center mb-2 mt-12 font-heading text-white">
-          {heading}
-        </h3>
-        <div className="flex justify-center mb-8">
-          <div className="w-12 h-0.5 bg-purple-500 rounded-full" />
-        </div>
-      </motion.div>
+    <div className="mb-12">
+      {/* Sub-heading - Letter by letter reveal */}
+      <div className="flex justify-center flex-wrap overflow-hidden">
+        {heading.split("").map((letter, i) => (
+          <motion.h3
+            key={i}
+            initial={{ y: 20, opacity: 0 }}
+            whileInView={{ y: 0, opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: i * 0.03, duration: 0.4 }}
+            className="text-2xl font-bold mb-2 mt-16 font-heading text-white tracking-tight mr-[1px]"
+          >
+            {letter === " " ? "\u00A0" : letter}
+          </motion.h3>
+        ))}
+      </div>
+      <div className="flex justify-center mb-10">
+        <motion.div 
+          initial={{ width: 0 }}
+          whileInView={{ width: "3rem" }}
+          transition={{ duration: 0.8 }}
+          className="h-1 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full shadow-[0_0_10px_rgba(168,85,247,0.5)]" 
+        />
+      </div>
 
       {/* Timeline wrapper */}
       <div className="relative">
         {/* Vertical line at left:0 */}
-        <div className="absolute left-0 top-0 bottom-0 w-px bg-purple-500/30" />
+        <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-white/5 rounded-full" />
+        
+        {/* Progress Line - Using whileInView with spring for simpler robust behavior that feels premium */}
+        <motion.div 
+          className="absolute left-0 top-0 w-[2px] bg-gradient-to-b from-purple-500 via-blue-500 to-indigo-500 rounded-full origin-top z-10 shadow-[0_0_15px_rgba(168,85,247,0.3)]"
+          initial={{ scaleY: 0 }}
+          whileInView={{ scaleY: 1 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 1.5, ease: "circOut" }}
+          style={{ height: '100%' }}
+        />
 
         {/* Cards */}
         {entries.map((entry, i) => (
@@ -199,53 +245,76 @@ const TimelineSection = ({ heading, entries }) => {
 const Journey = () => {
   const { data: allExpData, loading: expLoading } = useFetch(experienceService.getAllExperience);
   const { data: profileData, loading: profLoading } = useFetch(profileService.getProfile);
+  const { data: achievementsData, loading: achLoading } = useFetch(achievementService.getAllAchievements);
   const containerRef = useRef(null);
-  useScroll({
-    target: containerRef,
-    offset: ["start center", "end center"]
-  });
 
-  const loading = expLoading || profLoading;
+  const loading = expLoading || profLoading || achLoading;
 
   const rawExp = (allExpData && allExpData.length > 0) ? allExpData : fallbackExperience;
-  const rawAchievements = profileData?.achievements?.length > 0 ? profileData.achievements : fallbackAchievements;
+  const rawAchievements = (achievementsData && achievementsData.length > 0) 
+    ? achievementsData 
+    : (profileData?.achievements?.length > 0 ? profileData.achievements : fallbackAchievements);
 
   const workEntries = [...rawExp].filter(e => e.type === 'Work').sort((a, b) => parseDateValue(b.startDate) - parseDateValue(a.startDate));
   const trainingEntries = [...rawExp].filter(e => e.type === 'Training').sort((a, b) => parseDateValue(b.startDate) - parseDateValue(a.startDate));
   const educationEntries = [...rawExp].filter(e => e.type === 'Education').sort((a, b) => parseDateValue(b.startDate) - parseDateValue(a.startDate));
-  const achievementEntries = [...rawAchievements].map(a => ({ ...a, type: a.type || 'Achievement' })).sort((a, b) => parseDateValue(b.date) - parseDateValue(a.date));
+  
+  const achievementEntries = [
+    ...([...rawAchievements].map(a => ({ ...a, type: 'Achievement' }))),
+    ...([...rawExp].filter(e => e.type === 'Achievement'))
+  ].sort((a, b) => {
+    const valA = parseDateValue(a.date || a.startDate);
+    const valB = parseDateValue(b.date || b.startDate);
+    return valB - valA;
+  });
 
   return (
     <section id="journey" className="py-24 bg-[#050510] transition-colors relative overflow-hidden" ref={containerRef}>
-      {/* Background */}
+      {/* Background Particles/Gradients */}
       <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_10%_20%,rgba(124,58,237,0.05)_0%,rgba(5,5,16,1)_60%)] pointer-events-none z-0" />
+      <div className="absolute bottom-0 right-0 w-full h-1/2 bg-[radial-gradient(circle_at_90%_80%,rgba(6,182,212,0.03)_0%,rgba(5,5,16,1)_70%)] pointer-events-none z-0" />
 
-      <div className="max-w-3xl mx-auto px-4 relative z-10">
-        {/* Main heading */}
+      <div className="max-w-4xl mx-auto px-4 relative z-10">
+        {/* Main heading - Split Text Effect */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial="hidden"
+          whileInView="visible"
           viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="mb-12 text-center flex flex-col items-center"
+          className="mb-16 text-center flex flex-col items-center"
         >
-          <h2 className="text-3xl md:text-4xl font-heading font-extrabold text-[#e2e8f0] mb-4 tracking-tight">
-            My Journey
-          </h2>
-          <div className="w-16 h-1 bg-gradient-to-r from-[#7c3aed] to-[#06b6d4] rounded-full" />
+          <div className="flex flex-wrap justify-center overflow-hidden">
+            {"My Journey".split(" ").map((word, i) => (
+              <motion.h2 
+                key={i}
+                variants={{
+                  hidden: { y: 60, opacity: 0 },
+                  visible: { y: 0, opacity: 1, transition: { duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94], delay: i * 0.1 } }
+                }}
+                className="text-4xl md:text-5xl font-heading font-extrabold text-[#e2e8f0] mb-4 tracking-tight mr-4"
+              >
+                {word}
+              </motion.h2>
+            ))}
+          </div>
+          <motion.div 
+            initial={{ width: 0 }}
+            whileInView={{ width: "5rem" }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="h-1.5 bg-gradient-to-r from-[#7c3aed] to-[#06b6d4] rounded-full drop-shadow-[0_0_10px_rgba(124,58,237,0.5)]" 
+          />
         </motion.div>
 
         {loading && rawExp === fallbackExperience ? (
           <div className="mt-16 text-center text-[#64748b] animate-pulse">Loading journey data...</div>
         ) : (
-          <>
+          <div className="space-y-16">
             <TimelineSection heading="Experience" entries={workEntries} />
             <TimelineSection heading="Training" entries={trainingEntries} />
-            <TimelineSection heading="Education & Certifications" entries={educationEntries} />
+            <TimelineSection heading="Education" entries={educationEntries} />
             {achievementEntries.length > 0 && (
               <TimelineSection heading="Achievements" entries={achievementEntries} />
             )}
-          </>
+          </div>
         )}
       </div>
     </section>

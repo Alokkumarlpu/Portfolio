@@ -18,7 +18,7 @@ const ProjectCard = ({ project }) => {
       tiltMaxAngleX={8}
       tiltMaxAngleY={8}
       glareEnable={true}
-      glareMaxOpacity={0.15}
+      glareMaxOpacity={0.12}
       scale={1.02}
       transitionSpeed={400}
       className="h-full group"
@@ -53,12 +53,8 @@ const ProjectCard = ({ project }) => {
       `}</style>
 
       <div className="project-card-wrapper h-full">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-50px' }}
-          transition={{ duration: 0.5 }}
-          className="bg-[#0a0a1a]/95 backdrop-blur-xl rounded-2xl overflow-hidden flex flex-col h-full border border-white/10 transition-all duration-500 relative z-10 shadow-[0_20px_60px_rgba(0,0,0,0.5)] group-hover:shadow-[0_20px_60px_rgba(124,58,237,0.2)] group-hover:border-[#7c3aed]/40"
+        <div
+          className="bg-[#0a0a1a]/95 backdrop-blur-xl rounded-2xl overflow-hidden flex flex-col h-full border border-white/10 transition-all duration-500 relative z-10 shadow-[0_20px_60px_rgba(0,0,0,0.5)] group-hover:shadow-[0_20px_60px_rgba(124,58,237,0.2)] group-hover:border-[#7c3aed]/40 will-change-transform"
           style={{ transformStyle: 'preserve-3d' }}
         >
           {/* Hover glow overlay */}
@@ -73,11 +69,11 @@ const ProjectCard = ({ project }) => {
               <img
                 src={project.image}
                 alt={project.title}
-                className="w-full h-full object-cover scale-105 group-hover:scale-110 transition-transform duration-700 ease-out"
+                className="w-full h-full object-cover scale-105 group-hover:scale-[1.08] transition-transform duration-700 ease-out will-change-transform"
               />
             ) : (
               <div className={`w-full h-full flex flex-col items-center justify-center bg-gradient-to-br ${config.gradient}`}>
-                <span className="text-5xl mb-1">{config.icon}</span>
+                <span className="text-5xl mb-1 transform group-hover:scale-125 transition-transform duration-500">{config.icon}</span>
                 <span className="font-heading font-extrabold text-[3rem] leading-none text-white/[0.12] tracking-widest select-none">
                   {project.title.substring(0, 2).toUpperCase()}
                 </span>
@@ -87,9 +83,9 @@ const ProjectCard = ({ project }) => {
             {/* Bottom gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a1a] via-[#0a0a1a]/40 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-300" />
 
-            {/* Category badge — top left */}
+            {/* Category badge — top left with pulse */}
             <div className="absolute top-3 left-3 z-20">
-              <span className={`text-[10px] font-bold px-3 py-1.5 rounded-full border tracking-wider uppercase backdrop-blur-md ${config.badge}`}>
+              <span className={`text-[10px] font-bold px-3 py-1.5 rounded-full border tracking-wider uppercase backdrop-blur-md transition-all duration-300 group-hover:shadow-[0_0_10px_rgba(124,58,237,0.5)] group-hover:scale-110 ${config.badge}`}>
                 {project.category}
               </span>
             </div>
@@ -98,7 +94,7 @@ const ProjectCard = ({ project }) => {
             {project.featured && (
               <div className="absolute top-3 right-3 z-20">
                 <span className="text-[10px] font-bold px-3 py-1.5 rounded-full border border-amber-500/30 bg-amber-500/20 text-amber-300 backdrop-blur-md tracking-wider uppercase flex items-center gap-1.5 shadow-[0_0_15px_rgba(245,158,11,0.3)]">
-                  <FiStar className="w-3 h-3 fill-current" /> Featured
+                  <FiStar className="w-3 h-3 fill-current animate-pulse" /> Featured
                 </span>
               </div>
             )}
@@ -146,24 +142,24 @@ const ProjectCard = ({ project }) => {
             </p>
 
             {/* Tech stack — slide up on hover */}
-            <div className="flex flex-wrap gap-1.5 mt-3 overflow-hidden">
+            <div className="flex flex-wrap gap-1.5 mt-4 overflow-hidden">
               {project.techStack.slice(0, 5).map((tech, idx) => (
                 <span
                   key={idx}
-                  className="text-xs font-mono font-medium px-2.5 py-1 text-[#06b6d4] bg-[#06b6d4]/10 border border-[#06b6d4]/20 rounded-md translate-y-6 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300"
-                  style={{ transitionDelay: `${0.05 + idx * 0.04}s` }}
+                  className="text-[10px] font-mono font-bold px-2.5 py-1 text-[#06b6d4] bg-[#06b6d4]/10 border border-[#06b6d4]/20 rounded-md translate-y-8 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 ease-out"
+                  style={{ transitionDelay: `${0.1 + idx * 0.05}s` }}
                 >
                   {tech}
                 </span>
               ))}
               {project.techStack.length > 5 && (
-                <span className="text-xs px-2 py-1 text-gray-500 translate-y-6 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300" style={{ transitionDelay: '0.3s' }}>
+                <span className="text-[10px] font-bold px-2 py-1 text-gray-500 translate-y-8 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500" style={{ transitionDelay: '0.35s' }}>
                   +{project.techStack.length - 5}
                 </span>
               )}
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </Tilt>
   );

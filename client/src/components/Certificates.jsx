@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { FiExternalLink } from 'react-icons/fi';
 import useFetch from '../hooks/useFetch';
-import { profileService } from '../services/profileService';
+import { certificateService } from '../services/certificateService';
 import Tilt from 'react-parallax-tilt';
 import { fadeInUp, staggerContainer } from '../hooks/useScrollAnimation';
 
@@ -13,7 +13,8 @@ const fallbackCertificatesFull = [
     date: "Nov 2025",
     description: "Mastered generative AI concepts including LLMs, prompt engineering, and AI application development.",
     tags: ["AI", "LLM", "Prompt Engineering"],
-    link: "#"
+    link: "https://drive.google.com/file/d/1gCZXxcX2GfDjZOCzecbWTJS7ps0ecIoz/view",
+    imageUrl: "https://drive.google.com/thumbnail?id=1gCZXxcX2GfDjZOCzecbWTJS7ps0ecIoz&sz=w1000"
   },
   {
     icon: "☁️",
@@ -22,100 +23,129 @@ const fallbackCertificatesFull = [
     date: "Oct 2025",
     description: "Learned cloud infrastructure, deployment models, virtualization, and cloud service platforms.",
     tags: ["Cloud", "AWS", "DevOps"],
-    link: "#"
+    link: "https://drive.google.com/file/d/1p6CnWkmu5tx3G80gVzN1qbgidfTpGWYo/view",
+    imageUrl: "https://drive.google.com/thumbnail?id=1p6CnWkmu5tx3G80gVzN1qbgidfTpGWYo&sz=w1000"
   }
 ];
 
 const CertificateCard = ({ cert }) => {
   return (
     <Tilt
-      tiltMaxAngleX={8}
-      tiltMaxAngleY={8}
+      tiltMaxAngleX={10}
+      tiltMaxAngleY={10}
       glareEnable={true}
       glareMaxOpacity={0.15}
-      scale={1.02}
-      transitionSpeed={400}
+      scale={1.03}
+      transitionSpeed={1000}
       className={`relative group h-full`}
+      perspective={1200}
     >
-      <div className="h-full relative z-0 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.5)] group-hover:shadow-[0_15px_40px_rgba(124,58,237,0.2)] transition-shadow duration-500">
-        <motion.div 
-          variants={fadeInUp}
-          className={`bg-[#0a0a1a]/95 backdrop-blur-xl rounded-2xl overflow-hidden shadow-sm flex flex-col h-full border border-white/10 transition-all duration-300 relative z-10 group`}
-          style={{ transformStyle: 'preserve-3d' }}
+      <motion.div 
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: '-50px' }}
+        variants={{
+          hidden: { opacity: 0, y: 60 },
+          visible: { 
+            opacity: 1, 
+            y: 0, 
+            transition: { duration: 0.6, ease: 'easeOut' } 
+          }
+        }}
+        className="h-full relative z-0 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.5)] group-hover:shadow-[0_20px_60px_rgba(124,58,237,0.2)] group-hover:-translate-y-2 transition-all duration-500 bg-[#0a0a1a]/95 backdrop-blur-xl border border-white/10 hover:border-[#7c3aed]/50 overflow-hidden flex flex-col will-change-transform"
+        style={{ transformStyle: 'preserve-3d' }}
+      >
+        {/* Card Hover Glow overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#7c3aed]/0 to-[#06b6d4]/0 group-hover:from-[#7c3aed]/10 group-hover:to-[#06b6d4]/10 transition-colors duration-500 z-0 pointer-events-none" />
+
+        {/* Top Banner Area */}
+        <div 
+          className="relative h-48 overflow-hidden bg-[#050510] border-b border-white/5"
+          style={{ transform: 'translateZ(25px)' }}
         >
-          {/* Card Hover Glow effect */}
-          <div className="absolute inset-0 bg-gradient-to-br from-[#7c3aed]/0 to-[#06b6d4]/0 group-hover:from-[#7c3aed]/10 group-hover:to-[#06b6d4]/10 transition-colors duration-500 z-0 pointer-events-none" />
-
-          {/* Top Banner Area */}
-          <div 
-            className="relative h-40 overflow-hidden bg-[#050510] border-b border-white/5"
-            style={{ transform: 'translateZ(20px)' }}
-          >
-            <div className="w-full h-full flex items-center justify-center bg-[radial-gradient(ellipse_at_center,rgba(124,58,237,0.2)_0%,rgba(5,5,16,1)_70%)] text-white/20">
-              <span className="text-6xl filter drop-shadow-[0_0_15px_rgba(124,58,237,0.5)] transform group-hover:scale-110 transition-transform duration-500">{cert.icon}</span>
-            </div>
-            
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a1a] via-[#0a0a1a]/40 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-300" />
-            
-            <div className="absolute top-4 right-4 z-20">
-              <span className="text-[10px] font-bold px-3 py-1.5 rounded-full border tracking-wider uppercase bg-[#7c3aed]/20 text-[#7c3aed] border-[#7c3aed]/30 backdrop-blur-md">
-                {cert.issuer}
-              </span>
-            </div>
+          {/* Background Icon/Glow */}
+          <div className="absolute inset-0 flex items-center justify-center bg-[radial-gradient(ellipse_at_center,rgba(124,58,237,0.15)_0%,rgba(5,5,16,1)_80%)] text-white/10 z-0">
+            <span className="text-7xl filter drop-shadow-[0_0_20px_rgba(124,58,237,0.4)] transform group-hover:scale-125 group-hover:rotate-12 transition-all duration-700">
+              {cert.icon || "📜"}
+            </span>
           </div>
+
+          {cert.imageUrl && (
+            <img 
+              src={cert.imageUrl} 
+              alt={cert.title} 
+              className="absolute inset-0 w-full h-full object-cover scale-105 group-hover:scale-115 transition-transform duration-1000 opacity-90 group-hover:opacity-100 z-10 will-change-transform"
+              loading="lazy"
+              onError={(e) => {
+                e.target.style.display = 'none';
+              }}
+            />
+          )}
           
-          <div className="p-6 flex flex-col flex-grow relative z-10 bg-[#0a0a1a]" style={{ transform: 'translateZ(30px)' }}>
-            <h3 className="text-xl font-heading font-bold text-white mb-2 line-clamp-1 group-hover:text-[#06b6d4] transition-colors">
-              {cert.title}
-            </h3>
-            
-            <p className="text-xs text-[#64748b] font-medium mb-4 flex items-center gap-1">
-              🗓️ Issued {cert.date}
-            </p>
-            
-            <p className="text-[#94a3b8] text-sm mb-6 flex-grow leading-relaxed font-body">
-              {cert.description}
-            </p>
-            
-            <div className="flex flex-wrap gap-2 mb-6">
-              {cert.tags.map((tag, idx) => (
-                <span 
-                  key={idx}
-                  className="text-[11px] font-mono font-medium px-2 py-1 text-[#06b6d4] bg-[#06b6d4]/10 border border-[#06b6d4]/20 rounded-md"
-                >
-                  #{tag}
-                </span>
-              ))}
-            </div>
-
-            <a 
-              href={cert.link} 
-              target="_blank" 
-              rel="noreferrer"
-              className="inline-flex items-center justify-center w-full px-4 py-2 bg-white/5 backdrop-blur-md border border-white/10 text-[#e2e8f0] hover:bg-[#7c3aed] hover:border-[#7c3aed] hover:text-white font-medium rounded-lg transition-all duration-300 mt-auto hover:shadow-[0_0_15px_rgba(124,58,237,0.4)]"
-            >
-              View Credential <FiExternalLink className="ml-2 w-4 h-4" />
-            </a>
+          {/* Overlay Gradient */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a1a] via-transparent to-transparent opacity-70 z-20" />
+          
+          <div className="absolute top-4 right-4 z-30">
+            <span className="text-[10px] font-bold px-3 py-1.5 rounded-full border border-white/10 bg-white/5 text-gray-300 tracking-wider uppercase backdrop-blur-md group-hover:border-[#7c3aed]/50 group-hover:bg-[#7c3aed]/20 group-hover:text-white transition-all duration-300">
+              {cert.issuer}
+            </span>
           </div>
-        </motion.div>
-      </div>
+        </div>
+        
+        <div className="p-6 flex flex-col flex-grow relative z-10 bg-[#0a0a1a]" style={{ transform: 'translateZ(35px)' }}>
+          <h3 className="text-xl font-heading font-bold text-white mb-2 line-clamp-1 group-hover:text-[#06b6d4] transition-colors duration-300">
+            {cert.title}
+          </h3>
+          
+          <p className="text-[11px] text-[#64748b] font-bold mb-4 flex items-center gap-1.5 uppercase tracking-wider">
+            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_5px_#22c55e]"></span>
+            Issued {cert.date}
+          </p>
+          
+          <p className="text-[#94a3b8] text-sm mb-6 flex-grow leading-relaxed font-body line-clamp-2">
+            {cert.description}
+          </p>
+          
+          <div className="flex flex-wrap gap-2 mb-6 overflow-hidden">
+            {(cert.tags || []).map((tag, idx) => (
+              <span 
+                key={idx}
+                className="text-[10px] font-mono font-bold px-2.5 py-1 text-[#7c3aed] bg-[#7c3aed]/10 border border-[#7c3aed]/20 rounded translate-y-8 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 ease-out"
+                style={{ transitionDelay: `${0.1 + idx * 0.05}s` }}
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+
+          <a 
+            href={cert.link} 
+            target="_blank" 
+            rel="noreferrer"
+            className="inline-flex items-center justify-center w-full px-4 py-3 bg-white/5 border border-white/10 text-[#e2e8f0] hover:bg-gradient-to-r hover:from-[#7c3aed] hover:to-[#06b6d4] hover:border-transparent hover:text-white font-bold text-xs uppercase tracking-widest rounded-xl transition-all duration-500 mt-auto hover:shadow-[0_0_20px_rgba(124,58,237,0.4)]"
+          >
+            Verify Credential <FiExternalLink className="ml-2 w-4 h-4 group-hover:translate-x-1 group-hover:rotate-12 transition-transform" />
+          </a>
+        </div>
+      </motion.div>
     </Tilt>
   );
 };
 
 const Certificates = () => {
-  const { data: profileData, loading } = useFetch(profileService.getProfile);
+  const { data: dbCertificates, loading } = useFetch(certificateService.getAllCertificates);
 
   let certificates = fallbackCertificatesFull;
-  if (profileData && profileData.certificates && profileData.certificates.length > 0) {
-    certificates = profileData.certificates.map(dbCert => {
+  if (dbCertificates && dbCertificates.length > 0) {
+    certificates = dbCertificates.map(dbCert => {
       const enriched = fallbackCertificatesFull.find(f => f.title === dbCert.title) || {};
       return {
         ...dbCert,
-        icon: enriched.icon || "📜",
-        description: enriched.description || "Completed certification.",
-        tags: enriched.tags || ["Certification"],
-        link: enriched.link || "#"
+        icon: dbCert.icon || enriched.icon || "📜",
+        description: dbCert.description || enriched.description || "Completed certification.",
+        tags: dbCert.tags || enriched.tags || ["Certification"],
+        link: dbCert.link || enriched.link || "#",
+        imageUrl: dbCert.imageUrl || enriched.imageUrl || null
       };
     });
   }

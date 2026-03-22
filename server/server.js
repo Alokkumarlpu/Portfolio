@@ -25,6 +25,8 @@ app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/profile', require('./routes/profileRoutes'));
 app.use('/api/skills', require('./routes/skillRoutes'));
 app.use('/api/experience', require('./routes/experienceRoutes'));
+app.use('/api/certificates', require('./routes/certificateRoutes'));
+app.use('/api/achievements', require('./routes/achievementRoutes'));
 
 app.get('/api/test-email', async (req, res) => {
   try {

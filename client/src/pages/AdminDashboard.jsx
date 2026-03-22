@@ -8,10 +8,13 @@ import { profileService } from '../services/profileService';
 import { skillService } from '../services/skillService';
 import { experienceService } from '../services/experienceService';
 import { contactService } from '../services/contactService';
+import { certificateService as certService } from '../services/certificateService';
+import { achievementService } from '../services/achievementService';
 import toast, { Toaster } from 'react-hot-toast';
 import { FiPlus, FiEdit2, FiTrash2, FiLogOut, FiLayout, FiUser, FiCode, FiBriefcase, FiFileText, FiMessageSquare, FiSettings, FiCheck } from 'react-icons/fi';
 
 const AdminDashboard = () => {
+  console.log('DEBUG: certService is', typeof certService, certService);
   const [token, setToken] = useState(null);
   const [activeTab, setActiveTab] = useState('dashboard');
   
@@ -21,6 +24,8 @@ const AdminDashboard = () => {
   const { data: skills, refetch: refetchSkills } = useFetch(skillService.getAllSkills, [token]);
   const { data: experience, refetch: refetchExperience } = useFetch(experienceService.getAllExperience, [token]);
   const { data: messages, refetch: refetchMessages } = useFetch(contactService.getAllMessages, [token]);
+  const { data: certificatesList, refetch: refetchCertificatesList } = useFetch(certService.getAllCertificates, [token]);
+  const { data: achievements, refetch: refetchAchievements } = useFetch(achievementService.getAllAchievements, [token]);
 
   useEffect(() => {
     const userInfo = localStorage.getItem('userInfo');
@@ -47,6 +52,8 @@ const AdminDashboard = () => {
       case 'skills': return <SkillsTab skills={skills} refetchSkills={refetchSkills} />;
       case 'projects': return <ProjectsTab projects={projects} refetchProjects={refetchProjects} />;
       case 'experience': return <ExperienceTab experience={experience} refetchExperience={refetchExperience} />;
+      case 'certificates': return <CertificatesTab certificatesList={certificatesList} refetchCertificatesList={refetchCertificatesList} />;
+      case 'achievements': return <AchievementsTab achievements={achievements} refetchAchievements={refetchAchievements} />;
       case 'resume': return <ResumeTab profile={profile} refetchProfile={refetchProfile} />;
       case 'messages': return <MessagesTab messages={messages} refetchMessages={refetchMessages} />;
       default: return null;
@@ -60,6 +67,8 @@ const AdminDashboard = () => {
     { id: 'skills', icon: FiCode, label: 'Skills' },
     { id: 'projects', icon: FiLayout, label: 'Projects' },
     { id: 'experience', icon: FiBriefcase, label: 'Experience' },
+    { id: 'certificates', icon: FiFileText, label: 'Certificates' },
+    { id: 'achievements', icon: FiFileText, label: 'Achievements' },
     { id: 'resume', icon: FiFileText, label: 'Resume PDF' },
     { id: 'messages', icon: FiMessageSquare, label: 'Messages' },
   ];
@@ -478,6 +487,194 @@ const ProjectsTab = ({ projects, refetchProjects }) => {
              </div>
            </div>
         ))}
+      </div>
+    </div>
+  );
+};
+
+const CertificatesTab = ({ certificatesList, refetchCertificatesList }) => {
+  const [isAdding, setIsAdding] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const { values, handleChange, reset, setValues } = useForm({
+    title: '', issuer: '', date: '', link: '', imageUrl: '', icon: '📜', description: '', tags: ''
+  });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const payload = {
+        ...values,
+        tags: typeof values.tags === 'string' ? values.tags.split(',').map(t => t.trim()).filter(Boolean) : values.tags
+      };
+
+      if (editingId) {
+        await certService.updateCertificate(editingId, payload);
+      } else {
+        await certService.createCertificate(payload);
+      }
+
+      toast.success('Certificate saved');
+      reset(); setIsAdding(false); setEditingId(null); refetchCertificatesList();
+    } catch { toast.error('Error saving certificate'); }
+  };
+
+  const handleEdit = (cert) => {
+    setValues({
+      ...cert,
+      tags: Array.isArray(cert.tags) ? cert.tags.join(', ') : ''
+    });
+    setEditingId(cert._id);
+    setIsAdding(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm('Delete certificate?')) {
+      try {
+        await certService.deleteCertificate(id);
+        toast.success('Deleted');
+        refetchCertificatesList();
+      } catch { toast.error('Delete failed'); }
+    }
+  };
+
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Manage Certificates</h2>
+        <button onClick={() => { setIsAdding(!isAdding); reset(); setEditingId(null); }} className="bg-violet-600 px-4 py-2 text-white rounded-lg"><FiPlus className="inline mr-2" /> Add Certificate</button>
+      </div>
+
+      {isAdding && (
+        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 mb-8 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input label="Title" name="title" value={values.title} onChange={handleChange} required />
+            <Input label="Issuer" name="issuer" value={values.issuer} onChange={handleChange} required />
+            <Input label="Date (e.g., Nov 2025)" name="date" value={values.date} onChange={handleChange} required />
+            <Input label="Credential Link (URL)" name="link" value={values.link} onChange={handleChange} />
+            <Input label="Image URL" name="imageUrl" value={values.imageUrl} onChange={handleChange} />
+            <Input label="Icon (Emoji)" name="icon" value={values.icon} onChange={handleChange} />
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium mb-1">Tags (comma separated)</label>
+              <input name="tags" value={values.tags} onChange={handleChange} className="w-full px-4 py-2 border rounded-lg bg-gray-50 dark:bg-gray-950 dark:border-gray-800" />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium mb-1">Description</label>
+              <textarea name="description" value={values.description} onChange={handleChange} rows="2" className="w-full px-4 py-2 border rounded-lg bg-gray-50 dark:bg-gray-950 dark:border-gray-800"></textarea>
+            </div>
+          </div>
+          <button type="submit" className="px-6 py-2 bg-violet-600 text-white rounded-lg">
+            {editingId ? 'Update' : 'Save'} Certificate
+          </button>
+        </form>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {certificatesList?.map((cert) => (
+          <div key={cert._id} className="bg-white dark:bg-gray-900 p-4 border rounded-xl flex justify-between items-center">
+            <div>
+              <div className="font-bold text-gray-900 dark:text-white">{cert.title}</div>
+              <div className="text-xs text-gray-500">{cert.issuer} • {cert.date}</div>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => handleEdit(cert)} className="text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 p-2 rounded-lg transition-colors"><FiEdit2 /></button>
+              <button onClick={() => handleDelete(cert._id)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-2 rounded-lg transition-colors"><FiTrash2 /></button>
+            </div>
+          </div>
+        ))}
+        {(!certificatesList || certificatesList.length === 0) && (
+          <div className="col-span-full py-10 text-center text-gray-500 bg-gray-50 dark:bg-gray-950 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-800">
+            No certificates added to the database yet.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+const AchievementsTab = ({ achievements, refetchAchievements }) => {
+  const [isAdding, setIsAdding] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const { values, handleChange, reset, setValues } = useForm({
+    title: '', company: '', date: '', icon: '🏆', description: ''
+  });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (editingId) {
+        await achievementService.updateAchievement(editingId, values);
+      } else {
+        await achievementService.createAchievement(values);
+      }
+      toast.success('Achievement saved successfully!');
+      reset(); setIsAdding(false); setEditingId(null); refetchAchievements();
+    } catch { toast.error('Error saving achievement'); }
+  };
+
+  const handleEdit = (ach) => {
+    setValues({
+      title: ach.title || '',
+      company: ach.company || '',
+      date: ach.date || '',
+      icon: ach.icon || '🏆',
+      description: ach.description || ''
+    });
+    setEditingId(ach._id);
+    setIsAdding(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm('Delete achievement?')) {
+      try {
+        await achievementService.deleteAchievement(id);
+        toast.success('Deleted');
+        refetchAchievements();
+      } catch { toast.error('Delete failed'); }
+    }
+  };
+
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold">Manage Achievements</h2>
+        <button onClick={() => { setIsAdding(!isAdding); reset(); setEditingId(null); }} className="bg-violet-600 px-4 py-2 text-white rounded-lg"><FiPlus className="inline mr-2" /> Add Achievement</button>
+      </div>
+
+      {isAdding && (
+        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 mb-8 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input label="Title" name="title" value={values.title} onChange={handleChange} required />
+            <Input label="Organization / Company" name="company" value={values.company} onChange={handleChange} />
+            <Input label="Date (e.g., 2026)" name="date" value={values.date} onChange={handleChange} required />
+            <Input label="Icon (Emoji)" name="icon" value={values.icon} onChange={handleChange} />
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium mb-1">Description</label>
+              <textarea name="description" value={values.description} onChange={handleChange} rows="2" className="w-full px-4 py-2 border rounded-lg bg-gray-50 dark:bg-gray-950 dark:border-gray-800"></textarea>
+            </div>
+          </div>
+          <button type="submit" className="px-6 py-2 bg-violet-600 text-white rounded-lg">
+            {editingId ? 'Update' : 'Save'} Achievement
+          </button>
+        </form>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {achievements?.map((ach) => (
+          <div key={ach._id} className="bg-white dark:bg-gray-900 p-4 border rounded-xl flex justify-between items-center">
+            <div>
+              <div className="font-bold text-gray-900 dark:text-white">{ach.title}</div>
+              <div className="text-xs text-gray-500">{ach.company} • {ach.date}</div>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => handleEdit(ach)} className="text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 p-2 rounded-lg transition-colors"><FiEdit2 /></button>
+              <button onClick={() => handleDelete(ach._id)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-2 rounded-lg transition-colors"><FiTrash2 /></button>
+            </div>
+          </div>
+        ))}
+        {(!achievements || achievements.length === 0) && (
+          <div className="col-span-full py-10 text-center text-gray-500 bg-gray-50 dark:bg-gray-950 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-800">
+            No achievements added to the database yet.
+          </div>
+        )}
       </div>
     </div>
   );
