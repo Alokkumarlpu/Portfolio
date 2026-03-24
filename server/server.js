@@ -182,7 +182,7 @@ app.get('/api/test-email', async (req, res) => {
   const requestId = `test-email-${Date.now()}`;
   const recipient = req.query.to || process.env.EMAIL_USER;
 
-  console.log(`[API][TEST-EMAIL][${requestId}] Incoming request`, {
+  console.log(`[API][TEST-EMAIL][${requestId}] Testing email...`, {
     method: req.method,
     path: req.originalUrl,
     recipient,
@@ -195,17 +195,16 @@ app.get('/api/test-email', async (req, res) => {
 
   try {
     const result = await sendTestEmail(recipient);
-    console.log(`[API][TEST-EMAIL][${requestId}] Success`, result);
+    console.log(`[API][TEST-EMAIL][${requestId}] Success response:`, result);
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'Test email sent successfully',
       requestId,
       data: result,
     });
   } catch (err) {
-    console.error(`[API][TEST-EMAIL][${requestId}] Failed`);
-    console.error('[API][TEST-EMAIL] Error details:', {
+    console.error(`[API][TEST-EMAIL][${requestId}] Full error:`, {
       message: err?.message,
       code: err?.code,
       responseCode: err?.responseCode,
@@ -213,7 +212,7 @@ app.get('/api/test-email', async (req, res) => {
       stack: err?.stack,
     });
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Test email failed',
       requestId,
