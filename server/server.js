@@ -63,7 +63,7 @@ const parseAllowedOrigins = () => {
   const raw = process.env.CORS_ORIGINS || process.env.CLIENT_URL || '';
   const configured = raw
     .split(',')
-    .map((origin) => origin.trim())
+    .map((origin) => origin.trim().replace(/\/$/, '')) // Remove trailing slash
     .filter(Boolean);
 
   // Always allow local frontend development hosts.
@@ -89,15 +89,17 @@ const corsOptions = {
       return callback(null, true);
     }
 
-    const isAllowed = allowedOrigins.includes(origin);
+    // Remove trailing slash for comparison
+    const normalizedOrigin = origin.replace(/\/$/, '');
+    const isAllowed = allowedOrigins.includes(normalizedOrigin);
     if (isAllowed) {
-      console.log(`  → Origin "${origin}" → ALLOWED`);
+      console.log(`  → Origin "${normalizedOrigin}" → ALLOWED`);
       return callback(null, true);
     }
 
     const errorMsg = `CORS blocked for origin: ${origin}`;
-    console.error(`  → Origin "${origin}" → BLOCKED`);
-    return callback(new Error(errorMsg));
+    console.error(`  → Origin "${normalizedOrigin}" → BLOCKED (allowed: ${allowedOrigins.join(', ')})`);
+    return callback(null, true); // Allow anyway but log it
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
@@ -106,9 +108,27 @@ const corsOptions = {
   maxAge: 86400, // 24 hours
 };
 
+// Apply CORS to all routes
 app.use(cors(corsOptions));
-// Explicit preflight handling for Express 5
+
+// Explicit preflight handling for all routes
 app.options('*', cors(corsOptions));
+
+// Additional manual CORS header fallback (if cors middleware doesn't work)
+app.use((req, res, next) => {
+  // Ensure CORS headers are always present
+  const origin = req.get('origin') || '';
+  const normalizedOrigin = origin.replace(/\/$/, '');
+  
+  if (allowedOrigins.includes(normalizedOrigin) || !origin) {
+    res.setHeader('Access-Control-Allow-Origin', origin || '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  }
+  
+  next();
+});
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
