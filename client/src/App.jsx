@@ -66,9 +66,6 @@ const App = () => {
   return (
     <div className="bg-[#050510] min-h-screen text-white selection:bg-[#7c3aed]/30 selection:text-white">
       <GlobalParticles />
-      
-      {/* Grainy Noise Overlay */}
-      <div className="fixed inset-0 pointer-events-none z-[9999] opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-overlay"></div>
 
       <AnimatePresence mode="wait">
         {loading ? (

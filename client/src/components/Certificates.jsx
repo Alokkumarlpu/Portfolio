@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { FiExternalLink } from 'react-icons/fi';
 import useFetch from '../hooks/useFetch';
@@ -25,10 +26,74 @@ const fallbackCertificatesFull = [
     tags: ["Cloud", "AWS", "DevOps"],
     link: "https://drive.google.com/file/d/1p6CnWkmu5tx3G80gVzN1qbgidfTpGWYo/view",
     imageUrl: "https://drive.google.com/thumbnail?id=1p6CnWkmu5tx3G80gVzN1qbgidfTpGWYo&sz=w1000"
+  },
+  {
+    icon: "📜",
+    title: "Unlocking DSA with C",
+    issuer: "CSE PATHSHALA",
+    date: "Mar 2024",
+    description: "Completed a 25-hour live course on Data Structures and Algorithms using C language, covering arrays, linked lists, trees, and sorting algorithms with hands-on projects.",
+    tags: ["DSA", "C"],
+    link: "https://drive.google.com/file/d/1I7gt-TBTEZapybRGwJBBrwp6AmcfVPkX/view?usp=sharing",
+    imageUrl: "https://drive.google.com/thumbnail?id=1I7gt-TBTEZapybRGwJBBrwp6AmcfVPkX&sz=w1000"
   }
 ];
 
+const extractDriveFileId = (url = '') => {
+  const trimmed = String(url).trim();
+  if (!trimmed.includes('drive.google.com')) return null;
+
+  const match = trimmed.match(/\/d\/([a-zA-Z0-9_-]+)/) || trimmed.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  return match?.[1] || null;
+};
+
+const normalizeCertificateImageUrl = (url) => {
+  const trimmed = String(url || '').trim();
+  if (!trimmed || trimmed === '#' || trimmed.toLowerCase() === 'n/a') return null;
+
+  const driveFileId = extractDriveFileId(trimmed);
+  if (driveFileId) {
+    return `https://drive.google.com/thumbnail?id=${driveFileId}&sz=w1000`;
+  }
+
+  return trimmed;
+};
+
+const getImageCandidates = (primaryUrl, fallbackUrl, linkUrl) => {
+  const ordered = [primaryUrl, fallbackUrl, linkUrl]
+    .map((url) => normalizeCertificateImageUrl(url))
+    .filter(Boolean);
+
+  const driveIds = [primaryUrl, fallbackUrl, linkUrl]
+    .map((url) => extractDriveFileId(url || ''))
+    .filter(Boolean);
+
+  // Add alternative Google Drive render endpoints to reduce random thumbnail failures.
+  driveIds.forEach((id) => {
+    ordered.push(`https://lh3.googleusercontent.com/d/${id}=w1600`);
+    ordered.push(`https://drive.google.com/uc?export=view&id=${id}`);
+  });
+
+  return [...new Set(ordered)];
+};
+
 const CertificateCard = ({ cert }) => {
+  const fallbackImageUrl = useMemo(() => {
+    const matchedFallback = fallbackCertificatesFull.find((f) => f.title === cert.title);
+    return normalizeCertificateImageUrl(matchedFallback?.imageUrl) || null;
+  }, [cert.title]);
+
+  const imageCandidates = useMemo(() => {
+    return getImageCandidates(cert.imageUrl, fallbackImageUrl, cert.link);
+  }, [cert.imageUrl, cert.link, fallbackImageUrl]);
+
+  const [imageIndex, setImageIndex] = useState(0);
+  const imageSrc = imageCandidates[imageIndex] || null;
+
+  useEffect(() => {
+    setImageIndex(0);
+  }, [cert.imageUrl, cert.link, fallbackImageUrl]);
+
   return (
     <Tilt
       tiltMaxAngleX={10}
@@ -70,14 +135,17 @@ const CertificateCard = ({ cert }) => {
             </span>
           </div>
 
-          {cert.imageUrl && (
+          {imageSrc && (
             <img 
-              src={cert.imageUrl} 
+              src={imageSrc}
               alt={cert.title} 
               className="absolute inset-0 w-full h-full object-cover scale-105 group-hover:scale-115 transition-transform duration-1000 opacity-90 group-hover:opacity-100 z-10 will-change-transform"
               loading="lazy"
-              onError={(e) => {
-                e.target.style.display = 'none';
+              onError={() => {
+                if (imageIndex < imageCandidates.length - 1) {
+                  setImageIndex((prev) => prev + 1);
+                  return;
+                }
               }}
             />
           )}
@@ -145,7 +213,7 @@ const Certificates = () => {
         description: dbCert.description || enriched.description || "Completed certification.",
         tags: dbCert.tags || enriched.tags || ["Certification"],
         link: dbCert.link || enriched.link || "#",
-        imageUrl: dbCert.imageUrl || enriched.imageUrl || null
+        imageUrl: normalizeCertificateImageUrl(dbCert.imageUrl) || normalizeCertificateImageUrl(enriched.imageUrl) || null
       };
     });
   }

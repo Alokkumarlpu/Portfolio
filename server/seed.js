@@ -19,13 +19,16 @@ const seedData = async () => {
     await connectDB();
     try {
         console.log('Clearing existing data...');
-        await Profile.deleteMany({});
         await Skill.deleteMany({});
         await Experience.deleteMany({});
         await Project.deleteMany({});
 
         console.log('Seeding Profile (including achievements and certificates)...');
-        await Profile.create({
+        const existingProfile = await Profile.findOne();
+        const preservedProfileImage = existingProfile?.profileImage || '';
+        const preservedResumeUrl = existingProfile?.resumeUrl || '';
+
+        await Profile.findOneAndUpdate({}, {
             name: "Alok Kumar",
             title: "Full Stack Developer",
             bio: "Passionate Computer Science student at LPU building full-stack web applications with MERN stack. I love turning ideas into real-world products.",
@@ -33,8 +36,8 @@ const seedData = async () => {
             email: "alokkumar985642@gmail.com",
             phone: "+917970820876",
             location: "Phagwara, Punjab, India",
-            profileImage: "",
-            resumeUrl: "",
+            profileImage: preservedProfileImage,
+            resumeUrl: preservedResumeUrl,
             socialLinks: {
                 github: "https://github.com/Alokkumarlpu",
                 linkedin: "https://linkedin.com/in/alok7970",
@@ -71,7 +74,7 @@ const seedData = async () => {
                     date: "Oct 2025"
                 }
             ]
-        });
+        }, { new: true, upsert: true, setDefaultsOnInsert: true });
 
         console.log('Seeding Skills...');
         const skillsToInsert = [
@@ -167,6 +170,7 @@ const seedData = async () => {
             {
                 title: 'Car Rental Web Application',
                 description: 'Scalable car rental platform to digitize end-to-end rental operations with seamless booking, user management, and secure payment processing. Increased booking throughput by ~40%, reduced query latency by ~30% through optimization, and automated workflows cutting manual effort by ~50%.',
+                image: '/projects/car-rental.png',
                 techStack: ["Django", "MySQL", "Razorpay", "Tailwind CSS"],
                 category: 'Web',
                 featured: true,
@@ -177,6 +181,7 @@ const seedData = async () => {
             {
                 title: 'Language Translator',
                 description: 'Secure and efficient MERN-based translation platform for managing multilingual content with role-based access, Google OAuth authentication, AI-powered translation, and bulk CSV processing. Increased translation efficiency by ~45% and improved response time by ~35%.',
+                image: '/projects/translator.png',
                 techStack: ["MongoDB", "Express.js", "React.js", "Node.js", "Google OAuth", "REST APIs"],
                 category: 'Web',
                 featured: true,
@@ -187,6 +192,7 @@ const seedData = async () => {
             {
                 title: 'Java Snake Game',
                 description: 'Classic Snake game built in Java with Swing and AWT featuring OOP design, event handling, multithreading, and score tracking. Developed during Java training at LPU.',
+                image: '/projects/snake-game.png',
                 techStack: ["Java", "Swing", "AWT", "Multithreading", "OOP"],
                 category: 'Game',
                 featured: false,
@@ -197,6 +203,7 @@ const seedData = async () => {
             {
                 title: 'File Splitter & Merger',
                 description: 'Java desktop application to split large files into smaller chunks and merge them back. Built with optimized I/O operations and multithreading for performance and reliability.',
+                image: '/projects/file-splitter.png',
                 techStack: ["Java", "Swing", "Multithreading", "File I/O", "JDBC"],
                 category: 'Other',
                 featured: false,
@@ -207,6 +214,7 @@ const seedData = async () => {
             {
                 title: 'Multilingual Voice Assistant',
                 description: 'Full-stack multilingual voice assistant built for HackSmart hackathon using LLAMA LLM with real-time speech processing and API integration. Reached Top 10 Teams (Finalist) at HackSmart: Code India Forward.',
+                image: '/projects/voice-assistant.png',
                 techStack: ["LLAMA LLM", "Python", "React.js", "Speech Processing", "REST APIs"],
                 category: 'AI',
                 featured: true,

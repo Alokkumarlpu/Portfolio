@@ -1,16 +1,32 @@
 import Profile from '../models/Profile.js';
 
-export const getProfile = async (req, res, next) => {
+const toHttpsUrl = (url) => {
+  if (!url || typeof url !== 'string') return url;
+  return url.replace(/^http:\/\//i, 'https://');
+};
+
+const getUploadedFileUrl = (file) => {
+  return toHttpsUrl(file?.secure_url || file?.path || file?.url || null);
+};
+
+const getProfile = async (req, res, next) => {
   try {
     let profile = await Profile.findOne();
     if (!profile) {
       profile = await Profile.create({}); // Create default profile if none exists
     }
+
+    // Keep old stored URLs safe on HTTPS frontends.
+    if (profile.profileImage) profile.profileImage = toHttpsUrl(profile.profileImage);
+    if (profile.resumeUrl) profile.resumeUrl = toHttpsUrl(profile.resumeUrl);
+
     res.json(profile);
   } catch (error) {
     next(error);
   }
 };
+
+export { getProfile };
 
 export const updateProfile = async (req, res, next) => {
   try {
@@ -59,7 +75,14 @@ export const uploadProfileImage = async (req, res, next) => {
     }
 
     console.log('Uploaded file:', req.file);
-    const imageUrl = req.file.path;
+    const imageUrl = getUploadedFileUrl(req.file);
+
+    if (!imageUrl) {
+      return res.status(500).json({
+        success: false,
+        message: 'Cloudinary did not return a valid file URL'
+      });
+    }
 
     const profile = await Profile.findOneAndUpdate(
       {},
@@ -92,7 +115,14 @@ export const uploadResumePDF = async (req, res, next) => {
     }
 
     console.log('Uploaded resume:', req.file);
-    const resumeUrl = req.file.path;
+    const resumeUrl = getUploadedFileUrl(req.file);
+
+    if (!resumeUrl) {
+      return res.status(500).json({
+        success: false,
+        message: 'Cloudinary did not return a valid file URL'
+      });
+    }
 
     const profile = await Profile.findOneAndUpdate(
       {},

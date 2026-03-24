@@ -20,19 +20,52 @@ connectDB();
 
 const app = express();
 
-// Fix CORS
-app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'http://localhost:3000',
-    'https://aportfolio-mu.vercel.app'
-  ],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+const parseAllowedOrigins = () => {
+  const raw = process.env.CORS_ORIGINS || process.env.CLIENT_URL || '';
+  const configured = raw
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
 
+  // Always allow local frontend development hosts.
+  const localDefaults = [
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'http://localhost:5174',
+    'http://127.0.0.1:5174',
+  ];
+
+  return [...new Set([...configured, ...localDefaults])];
+};
+
+const allowedOrigins = parseAllowedOrigins();
+
+const isAllowedVercelPreview = (origin) => {
+  // Allow Vercel preview URLs only if explicitly enabled.
+  if (process.env.ALLOW_VERCEL_PREVIEW !== 'true') return false;
+  return /^https:\/\/[a-zA-Z0-9-]+\.vercel\.app$/.test(origin);
+};
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow non-browser requests (Postman/cURL/server-to-server) with no Origin header.
+    if (!origin) return callback(null, true);
+
+    const isAllowed = allowedOrigins.includes(origin) || isAllowedVercelPreview(origin);
+    if (isAllowed) return callback(null, true);
+
+    return callback(new Error(`CORS blocked for origin: ${origin}`));
+  },
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
+app.options(/.*/, cors(corsOptions));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Add health route BEFORE other routes
 app.get('/api/health', (req, res) => {

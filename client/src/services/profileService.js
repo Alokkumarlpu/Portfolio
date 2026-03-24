@@ -24,7 +24,6 @@ export const profileService = {
 
     const response = await api.post('/profile/upload-image', formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
         Authorization: `Bearer ${token}`
       }
     });
@@ -44,7 +43,6 @@ export const profileService = {
 
     const response = await api.post('/profile/upload-resume', formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
         Authorization: `Bearer ${token}`
       }
     });

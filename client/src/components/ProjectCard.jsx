@@ -10,8 +10,33 @@ const categoryConfig = {
   Other: { gradient: 'from-gray-800 to-gray-900',     icon: '💻', badge: 'bg-gray-500/20 text-gray-300 border-gray-500/30' },
 };
 
+const localProjectImageByTitle = {
+  'car rental web application': '/projects/car-rental.png',
+  'language translator': '/projects/translator.png',
+  'language translator platform': '/projects/translator.png',
+  'java snake game': '/projects/snake-game.png',
+  'file splitter & merger': '/projects/file-splitter.png',
+  'multilingual voice assistant': '/projects/voice-assistant.png',
+};
+
+const normalizeText = (value = '') => String(value).trim().toLowerCase();
+
+const resolveProjectImage = (project) => {
+  const raw = String(project?.image || '').trim();
+
+  if (raw) {
+    if (/^https?:\/\//i.test(raw)) return raw;
+    if (raw.startsWith('/')) return raw;
+    if (raw.startsWith('projects/')) return `/${raw}`;
+    return `/projects/${raw}`;
+  }
+
+  return localProjectImageByTitle[normalizeText(project?.title)] || null;
+};
+
 const ProjectCard = ({ project }) => {
   const config = categoryConfig[project.category] || categoryConfig.Other;
+  const resolvedImage = resolveProjectImage(project);
 
   return (
     <Tilt
@@ -65,9 +90,9 @@ const ProjectCard = ({ project }) => {
             className="relative h-[200px] w-full overflow-hidden flex-shrink-0 border-b border-white/5"
             style={{ transform: 'translateZ(20px)' }}
           >
-            {project.image ? (
+            {resolvedImage ? (
               <img
-                src={project.image}
+                src={resolvedImage}
                 alt={project.title}
                 className="w-full h-full object-cover scale-105 group-hover:scale-[1.08] transition-transform duration-700 ease-out will-change-transform"
               />

@@ -41,6 +41,53 @@ EMAIL_PASS=your_app_password
 CLIENT_URL=http://localhost:5173
 ```
 
+### Production (Vercel Frontend + Express Backend + Cloudinary)
+
+This project stack is: **React (Vite) + Node.js + Express + MongoDB + Cloudinary**.
+
+Use these variables in your backend hosting provider (Render/Railway/EC2/etc):
+
+```env
+NODE_ENV=production
+PORT=5000
+MONGO_URI=mongodb+srv://<user>:<password>@cluster.mongodb.net/portfolio
+JWT_SECRET=your_jwt_secret_key
+
+# Cloudinary
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+
+# CORS: comma-separated allowlist
+CORS_ORIGINS=http://localhost:5173,https://your-frontend.vercel.app,https://www.your-custom-domain.com
+```
+
+Use this variable in Vercel (Frontend Project Settings -> Environment Variables):
+
+```env
+VITE_API_URL=https://your-backend-domain.com
+```
+
+Notes:
+- Set `VITE_API_URL` to backend root URL (without `/api`) or full `/api` URL. The client normalizes both.
+- Do not use `localhost` in Vercel environment variables.
+- Backend must be HTTPS; otherwise browsers block requests from HTTPS frontend (mixed content).
+
+### Debug Checklist for Cloudinary on Production
+
+1. Open DevTools -> Network and inspect failed request.
+2. If browser shows CORS error:
+   - Verify request Origin matches one of `CORS_ORIGINS` entries exactly.
+3. If upload fails with 401/403:
+   - Check `Authorization: Bearer <token>` is present.
+4. If upload fails with 400 (multipart):
+   - Ensure frontend is not manually setting multipart boundary headers.
+5. If image/PDF URL begins with `http://`:
+   - Browser will block on Vercel HTTPS pages.
+   - Ensure Cloudinary URLs are stored and returned as `https://`.
+6. If Cloudinary returns `Invalid Signature`:
+   - Confirm backend Cloudinary env vars are set in production, not just local `.env`.
+
 ## Running Locally
 
 1. **Install Dependencies**
