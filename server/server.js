@@ -178,7 +178,7 @@ app.use('/api/experience', experienceRoutes);
 app.use('/api/certificates', certificateRoutes);
 app.use('/api/achievements', achievementRoutes);
 
-app.get('/api/test-email', async (req, res) => {
+app.get(['/api/test-email', '/test-email'], async (req, res) => {
   const requestId = `test-email-${Date.now()}`;
   const recipient = req.query.to || process.env.EMAIL_USER;
 
