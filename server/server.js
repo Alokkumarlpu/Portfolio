@@ -26,8 +26,9 @@ const validateEnv = () => {
     'CLOUDINARY_CLOUD_NAME',
     'CLOUDINARY_API_KEY',
     'CLOUDINARY_API_SECRET',
+    'RESEND_API_KEY',
+    'EMAIL_FROM',
     'EMAIL_USER',
-    'EMAIL_PASS',
   ];
   const missing = required.filter(key => !process.env[key]);
   
@@ -152,8 +153,9 @@ app.get('/api/health', (req, res) => {
     environment: process.env.NODE_ENV || 'development',
     mongodb: process.env.MONGO_URI ? 'configured' : 'missing',
     cloudinary: process.env.CLOUDINARY_CLOUD_NAME ? 'configured' : 'missing',
+    resendApiKey: process.env.RESEND_API_KEY ? 'configured' : 'missing',
+    emailFrom: process.env.EMAIL_FROM ? 'configured' : 'missing',
     emailUser: process.env.EMAIL_USER ? 'configured' : 'missing',
-    emailPass: process.env.EMAIL_PASS ? 'configured' : 'missing',
   });
 });
 
@@ -187,9 +189,10 @@ app.get(['/api/test-email', '/test-email'], async (req, res) => {
     path: req.originalUrl,
     recipient,
     envLoaded: {
+      RESEND_API_KEY: Boolean(process.env.RESEND_API_KEY),
+      EMAIL_FROM: Boolean(process.env.EMAIL_FROM),
       EMAIL_USER: Boolean(process.env.EMAIL_USER),
-      EMAIL_PASS: Boolean(process.env.EMAIL_PASS),
-      EMAIL_PASS_LENGTH: process.env.EMAIL_PASS ? String(process.env.EMAIL_PASS).replace(/\s+/g, '').length : 0,
+      RESEND_API_KEY_PREFIX: process.env.RESEND_API_KEY ? `${String(process.env.RESEND_API_KEY).slice(0, 6)}...` : null,
     },
   });
 
