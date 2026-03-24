@@ -111,8 +111,8 @@ const corsOptions = {
 // Apply CORS to all routes
 app.use(cors(corsOptions));
 
-// Explicit preflight handling for all routes
-app.options('*', cors(corsOptions));
+// Explicit preflight handling for Express 5 (use regex instead of *)
+app.options(/.*/, cors(corsOptions));
 
 // Additional manual CORS header fallback (if cors middleware doesn't work)
 app.use((req, res, next) => {
