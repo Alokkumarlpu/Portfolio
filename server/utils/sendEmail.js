@@ -11,6 +11,25 @@ const maskEmail = (email = '') => {
 
 const sanitizePass = (value = '') => String(value).replace(/\s+/g, '');
 
+const withTimeout = async (promise, ms, label) => {
+  let timeoutId;
+
+  const timeoutPromise = new Promise((_, reject) => {
+    timeoutId = setTimeout(() => {
+      const timeoutError = new Error(`${label} timed out after ${ms}ms`);
+      timeoutError.code = 'EMAIL_TIMEOUT';
+      timeoutError.statusCode = 500;
+      reject(timeoutError);
+    }, ms);
+  });
+
+  try {
+    return await Promise.race([promise, timeoutPromise]);
+  } finally {
+    clearTimeout(timeoutId);
+  }
+};
+
 const validateEmailEnv = () => {
   console.log('[EMAIL] Validating environment variables...');
 
@@ -151,6 +170,9 @@ const mapEmailError = (error) => {
   if (error.code === 'ETIMEDOUT') {
     return 'Connection timeout to Gmail SMTP (ETIMEDOUT). Increase timeout or check Render network configuration';
   }
+  if (error.code === 'EMAIL_TIMEOUT') {
+    return 'Email operation timed out while waiting for Gmail SMTP response';
+  }
   if (error.code === 'ECONNREFUSED') {
     return 'Connection refused by Gmail SMTP (ECONNREFUSED). Verify smtp.gmail.com:465 is accessible';
   }
@@ -248,14 +270,22 @@ export const sendContactEmail = async (name, email, message) => {
     };
 
     console.log('[EMAIL] Sending email to portfolio owner...');
-    const ownerInfo = await transporter.sendMail(mailToOwner);
+    const ownerInfo = await withTimeout(
+      transporter.sendMail(mailToOwner),
+      12000,
+      'Owner email send'
+    );
     if (!ownerInfo) {
       throw new Error('Owner email send returned no info');
     }
     logSendResult('Owner', ownerInfo);
 
     console.log('[EMAIL] Sending confirmation email to visitor...');
-    const visitorInfo = await transporter.sendMail(mailToVisitor);
+    const visitorInfo = await withTimeout(
+      transporter.sendMail(mailToVisitor),
+      12000,
+      'Visitor email send'
+    );
     if (!visitorInfo) {
       throw new Error('Visitor email send returned no info');
     }
@@ -331,7 +361,11 @@ export const sendTestEmail = async (recipientEmail) => {
     };
 
     console.log('[EMAIL][TEST] Sending test email...');
-    const info = await transporter.sendMail(testMailOptions);
+    const info = await withTimeout(
+      transporter.sendMail(testMailOptions),
+      12000,
+      'Test email send'
+    );
 
     if (!info) {
       throw new Error('Test email send returned no info');

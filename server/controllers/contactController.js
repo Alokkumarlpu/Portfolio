@@ -1,6 +1,25 @@
 import Contact from '../models/Contact.js';
 import { sendContactEmail } from '../utils/sendEmail.js';
 
+const withTimeout = async (promise, ms, label) => {
+  let timeoutId;
+
+  const timeoutPromise = new Promise((_, reject) => {
+    timeoutId = setTimeout(() => {
+      const timeoutError = new Error(`${label} timed out after ${ms}ms`);
+      timeoutError.code = 'CONTACT_EMAIL_TIMEOUT';
+      timeoutError.statusCode = 500;
+      reject(timeoutError);
+    }, ms);
+  });
+
+  try {
+    return await Promise.race([promise, timeoutPromise]);
+  } finally {
+    clearTimeout(timeoutId);
+  }
+};
+
 export const submitContact = async (req, res, next) => {
   try {
     const { name, email, message } = req.body;
@@ -33,7 +52,11 @@ export const submitContact = async (req, res, next) => {
     console.log('[SUBMIT-CONTACT] Attempting to send email...');
     let emailResult;
     try {
-      emailResult = await sendContactEmail(name, email, message);
+      emailResult = await withTimeout(
+        sendContactEmail(name, email, message),
+        15000,
+        'Contact email workflow'
+      );
       console.log('[SUBMIT-CONTACT] Email sent successfully:', emailResult);
     } catch (emailError) {
       console.error('[SUBMIT-CONTACT] CRITICAL: Email delivery failed after save');
