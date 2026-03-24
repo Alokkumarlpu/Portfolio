@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -23,6 +23,32 @@ const AnimatedRoute = ({ children }) => (
   </motion.div>
 );
 
+const hasAdminToken = () => {
+  const userInfoRaw = localStorage.getItem('userInfo');
+  if (!userInfoRaw) return false;
+
+  try {
+    const parsed = JSON.parse(userInfoRaw);
+    return Boolean(parsed?.token);
+  } catch {
+    return false;
+  }
+};
+
+const RequireAdminAuth = ({ children }) => {
+  if (!hasAdminToken()) {
+    return <Navigate to="/admin/login" replace />;
+  }
+  return children;
+};
+
+const RedirectIfAuthed = ({ children }) => {
+  if (hasAdminToken()) {
+    return <Navigate to="/admin" replace />;
+  }
+  return children;
+};
+
 const AnimatedRoutes = () => {
   const location = useLocation();
   return (
@@ -30,8 +56,27 @@ const AnimatedRoutes = () => {
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<AnimatedRoute><Home /></AnimatedRoute>} />
         <Route path="/projects" element={<AnimatedRoute><ProjectsPage /></AnimatedRoute>} />
-        <Route path="/admin" element={<AnimatedRoute><AdminDashboard /></AnimatedRoute>} />
-        <Route path="/admin/login" element={<AnimatedRoute><AdminDashboard /></AnimatedRoute>} />
+        <Route
+          path="/admin"
+          element={
+            <AnimatedRoute>
+              <RequireAdminAuth>
+                <AdminDashboard />
+              </RequireAdminAuth>
+            </AnimatedRoute>
+          }
+        />
+        <Route
+          path="/admin/login"
+          element={
+            <AnimatedRoute>
+              <RedirectIfAuthed>
+                <AdminDashboard />
+              </RedirectIfAuthed>
+            </AnimatedRoute>
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AnimatePresence>
   );

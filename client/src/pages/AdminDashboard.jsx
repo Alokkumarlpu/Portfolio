@@ -11,21 +11,22 @@ import { contactService } from '../services/contactService';
 import { certificateService as certService } from '../services/certificateService';
 import { achievementService } from '../services/achievementService';
 import toast, { Toaster } from 'react-hot-toast';
-import { FiPlus, FiEdit2, FiTrash2, FiLogOut, FiLayout, FiUser, FiCode, FiBriefcase, FiFileText, FiMessageSquare, FiSettings, FiCheck } from 'react-icons/fi';
+import { FiPlus, FiEdit2, FiTrash2, FiLogOut, FiLayout, FiUser, FiCode, FiBriefcase, FiFileText, FiMessageSquare, FiSettings, FiCheck, FiLock, FiEye, FiEyeOff, FiShield } from 'react-icons/fi';
 
 const AdminDashboard = () => {
   console.log('DEBUG: certService is', typeof certService, certService);
   const [token, setToken] = useState(null);
   const [activeTab, setActiveTab] = useState('dashboard');
+  const isAuthenticated = Boolean(token);
   
   // Data Fetching
-  const { data: profile, refetch: refetchProfile } = useFetch(profileService.getProfile, [token]);
-  const { data: projects, refetch: refetchProjects } = useFetch(projectService.getAllProjects, [token]);
-  const { data: skills, refetch: refetchSkills } = useFetch(skillService.getAllSkills, [token]);
-  const { data: experience, refetch: refetchExperience } = useFetch(experienceService.getAllExperience, [token]);
-  const { data: messages, refetch: refetchMessages } = useFetch(contactService.getAllMessages, [token]);
-  const { data: certificatesList, refetch: refetchCertificatesList } = useFetch(certService.getAllCertificates, [token]);
-  const { data: achievements, refetch: refetchAchievements } = useFetch(achievementService.getAllAchievements, [token]);
+  const { data: profile, refetch: refetchProfile } = useFetch(profileService.getProfile, [token], { enabled: isAuthenticated });
+  const { data: projects, refetch: refetchProjects } = useFetch(projectService.getAllProjects, [token], { enabled: isAuthenticated });
+  const { data: skills, refetch: refetchSkills } = useFetch(skillService.getAllSkills, [token], { enabled: isAuthenticated });
+  const { data: experience, refetch: refetchExperience } = useFetch(experienceService.getAllExperience, [token], { enabled: isAuthenticated });
+  const { data: messages, refetch: refetchMessages } = useFetch(contactService.getAllMessages, [token], { enabled: isAuthenticated });
+  const { data: certificatesList, refetch: refetchCertificatesList } = useFetch(certService.getAllCertificates, [token], { enabled: isAuthenticated });
+  const { data: achievements, refetch: refetchAchievements } = useFetch(achievementService.getAllAchievements, [token], { enabled: isAuthenticated });
 
   useEffect(() => {
     const userInfo = localStorage.getItem('userInfo');
@@ -74,7 +75,7 @@ const AdminDashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pt-20 flex flex-col md:flex-row">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 pt-20 flex flex-col md:flex-row">
       <Toaster position="top-right" />
       {/* Sidebar */}
       <aside className="w-full md:w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 p-4 shrink-0">
@@ -789,8 +790,8 @@ const MessagesTab = ({ messages, refetchMessages }) => {
 // Reusable Input
 const Input = ({ label, name, value, onChange, type='text', disabled=false }) => (
   <div>
-    <label className="block text-sm font-medium mb-1">{label}</label>
-    <input type={type} name={name} value={value} onChange={onChange} disabled={disabled} className="w-full px-4 py-2 border rounded-lg bg-gray-50 dark:bg-gray-950 dark:border-gray-800 disabled:opacity-50" />
+    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{label}</label>
+    <input type={type} name={name} value={value} onChange={onChange} disabled={disabled} className="w-full px-4 py-2 border rounded-lg bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100 dark:border-gray-800 disabled:opacity-50" />
   </div>
 );
 
@@ -798,23 +799,106 @@ const Input = ({ label, name, value, onChange, type='text', disabled=false }) =>
 const AdminLogin = ({ setToken }) => {
   const { values, handleChange } = useForm({ username: '', password: '' });
   const [err, setErr] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleLog = async (e) => {
     e.preventDefault();
+    setErr('');
+    setIsSubmitting(true);
+
     try {
       const { data } = await api.post('/auth/login', values);
       localStorage.setItem('userInfo', JSON.stringify(data));
       setToken(data.token);
-    } catch (e) { setErr('Login failed. Check credentials.'); }
+    } catch (e) {
+      setErr('Login failed. Check credentials.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <form onSubmit={handleLog} className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md space-y-6">
-        <h2 className="text-2xl font-bold text-center">Admin Access</h2>
-        {err && <div className="text-red-500 bg-red-50 p-3 rounded">{err}</div>}
-        <Input label="Username" name="username" value={values.username} onChange={handleChange} />
-        <Input label="Password" type="password" name="password" value={values.password} onChange={handleChange} />
-        <button type="submit" className="w-full bg-violet-600 text-white py-3 rounded-lg font-bold hover:bg-violet-700">Enter Dashboard</button>
-      </form>
+    <div className="min-h-screen px-4 py-8 flex items-center justify-center">
+      <motion.form
+        onSubmit={handleLog}
+        initial={{ opacity: 0, y: 24, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.4, ease: 'easeOut' }}
+        className="w-full max-w-md"
+      >
+        <div className="rounded-2xl p-[1px] bg-gradient-to-br from-violet-500/80 via-fuchsia-500/70 to-blue-500/80 shadow-2xl shadow-violet-900/20">
+          <div className="bg-white text-gray-900 rounded-2xl p-8 border border-white/60 space-y-5">
+            <div className="text-center space-y-2">
+              <div className="w-14 h-14 mx-auto rounded-full bg-violet-100 text-violet-700 flex items-center justify-center">
+                <FiShield className="w-6 h-6" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900">Admin Access</h2>
+              <p className="text-sm text-gray-500">Sign in to manage your portfolio content</p>
+            </div>
+
+            {err && (
+              <div className="text-red-700 bg-red-50 border border-red-200 p-3 rounded-lg text-sm">
+                {err}
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                <div className="relative">
+                  <FiUser className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="text"
+                    name="username"
+                    value={values.username}
+                    onChange={handleChange}
+                    autoComplete="username"
+                    placeholder="Enter admin username"
+                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-gray-900 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-violet-400 transition"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <div className="relative">
+                  <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    name="password"
+                    value={values.password}
+                    onChange={handleChange}
+                    autoComplete="current-password"
+                    placeholder="Enter admin password"
+                    className="w-full pl-10 pr-12 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-gray-900 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-violet-400 transition"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-violet-600 transition"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? <FiEyeOff className="w-5 h-5" /> : <FiEye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white py-3 rounded-lg font-bold hover:from-violet-700 hover:to-fuchsia-700 disabled:opacity-70 disabled:cursor-not-allowed transition"
+            >
+              {isSubmitting ? 'Signing In...' : 'Enter Dashboard'}
+            </button>
+
+            <p className="text-xs text-center text-gray-500">
+              Protected area. Authorized users only.
+            </p>
+          </div>
+        </div>
+      </motion.form>
     </div>
   );
 };

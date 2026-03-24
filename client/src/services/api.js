@@ -99,9 +99,10 @@ api.interceptors.response.use(
         localStorage.removeItem('userInfo');
         localStorage.removeItem('adminToken');
         localStorage.removeItem('adminUser');
-        
-        if (window.location.pathname.startsWith('/admin')) {
-          window.location.href = '/admin';
+
+        const isAdminPath = window.location.pathname.startsWith('/admin');
+        if (!isAdminPath) {
+          window.location.replace('/admin/login');
         }
       } else if (response.status === 403) {
         console.error('   → Forbidden: Access denied');

@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 
-const useFetch = (serviceFunction, deps = []) => {
+const useFetch = (serviceFunction, deps = [], options = {}) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { enabled = true } = options;
 
   const executeFetch = useCallback(async () => {
     setLoading(true);
@@ -19,9 +20,13 @@ const useFetch = (serviceFunction, deps = []) => {
   }, [serviceFunction]);
 
   useEffect(() => {
+    if (!enabled) {
+      setLoading(false);
+      return;
+    }
     executeFetch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, deps);
+  }, [enabled, ...deps]);
 
   return { data, loading, error, refetch: executeFetch };
 };
