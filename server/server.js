@@ -4,7 +4,7 @@ import express from 'express';
 import cors from 'cors';
 import connectDB from './config/db.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
-import { sendContactEmail } from './utils/sendEmail.js';
+import { sendTestEmail } from './utils/sendEmail.js';
 
 // Route imports
 import projectRoutes from './routes/projectRoutes.js';
@@ -20,7 +20,15 @@ import achievementRoutes from './routes/achievementRoutes.js';
 // ENVIRONMENT VALIDATION
 // ==============================================================================
 const validateEnv = () => {
-  const required = ['MONGO_URI', 'JWT_SECRET', 'CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET'];
+  const required = [
+    'MONGO_URI',
+    'JWT_SECRET',
+    'CLOUDINARY_CLOUD_NAME',
+    'CLOUDINARY_API_KEY',
+    'CLOUDINARY_API_SECRET',
+    'EMAIL_USER',
+    'EMAIL_PASS',
+  ];
   const missing = required.filter(key => !process.env[key]);
   
   if (missing.length > 0) {
@@ -144,6 +152,8 @@ app.get('/api/health', (req, res) => {
     environment: process.env.NODE_ENV || 'development',
     mongodb: process.env.MONGO_URI ? 'configured' : 'missing',
     cloudinary: process.env.CLOUDINARY_CLOUD_NAME ? 'configured' : 'missing',
+    emailUser: process.env.EMAIL_USER ? 'configured' : 'missing',
+    emailPass: process.env.EMAIL_PASS ? 'configured' : 'missing',
   });
 });
 
@@ -170,9 +180,18 @@ app.use('/api/achievements', achievementRoutes);
 
 app.get('/api/test-email', async (req, res) => {
   try {
-    await sendContactEmail('Test Name', 'test@example.com', 'This is a test message');
-    res.json({ success: true, message: 'Email sent!' });
+    const recipient = req.query.to || process.env.EMAIL_USER;
+    const result = await sendTestEmail(recipient);
+    res.status(200).json({
+      success: true,
+      message: 'Test email sent successfully',
+      data: result,
+    });
   } catch (err) {
+    console.error('[API][TEST-EMAIL] Failed:', {
+      message: err?.message,
+      stack: err?.stack,
+    });
     res.status(500).json({ success: false, error: err.message });
   }
 });

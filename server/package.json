@@ -12,7 +12,8 @@
     "seed:projects": "node seed_projects.js",
     "seed:certificates": "node seed_certificates.js",
     "seed:admin": "node seedAdmin.js",
-    "seed:all": "npm run seed && npm run seed:certificates && npm run seed:admin"
+    "seed:all": "npm run seed && npm run seed:certificates && npm run seed:admin",
+    "migrate:messages": "node migrate_contacts_to_messages.js"
   },
   "engines": {
     "node": ">=18.0.0"

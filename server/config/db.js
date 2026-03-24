@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import Message from '../models/Message.js';
 
 const connectDB = async () => {
   try {
@@ -20,6 +21,10 @@ const connectDB = async () => {
     console.log(`   Host: ${conn.connection.host}`);
     console.log(`   Database: ${conn.connection.name}`);
     console.log(`   Port: ${conn.connection.port}\n`);
+
+    // Ensure the messages collection exists even before first write.
+    await Message.createCollection();
+    console.log('✅ Ensured MongoDB collection exists: messages');
 
     // Monitor connection events
     mongoose.connection.on('error', (err) => {

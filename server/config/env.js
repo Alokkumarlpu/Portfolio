@@ -1,8 +1,16 @@
 import dotenv from 'dotenv';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
-// Load environment variables from parent directory if they are not already set
-// This is primarily for local development where .env is in the root
-dotenv.config({ path: '../.env' });
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const rootEnvPath = path.resolve(__dirname, '../../.env');
+const serverEnvPath = path.resolve(__dirname, '../.env');
 
-console.log('Environment variables loaded ✅');
+// Load .env for local development. In Render, env vars are injected by platform.
+const rootResult = dotenv.config({ path: rootEnvPath });
+if (rootResult.error) {
+	dotenv.config({ path: serverEnvPath });
+}
+
+console.log('Environment variables initialized');
