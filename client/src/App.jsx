@@ -96,6 +96,10 @@ const App = () => {
   const isAdminRoute = location.pathname.startsWith('/admin');
 
   useEffect(() => {
+    if (window.matchMedia('(max-width: 768px)').matches) {
+      return undefined;
+    }
+
     const lenis = new Lenis({
       duration: 1.4,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),

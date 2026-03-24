@@ -151,7 +151,7 @@ const TimelineItem = ({ entry, index }) => {
           {dateBadge && (
             <motion.span 
               whileHover={{ scale: 1.05 }}
-              className="text-[10px] px-3 py-1.5 rounded-full bg-purple-500/10 text-purple-300 whitespace-nowrap border border-purple-500/20 flex-shrink-0 font-mono font-bold tracking-wider uppercase shadow-[0_0_10px_rgba(168,85,247,0.1)]"
+              className="text-xs sm:text-sm px-3 py-1.5 rounded-full bg-purple-500/10 text-purple-300 whitespace-nowrap border border-purple-500/20 flex-shrink-0 font-mono font-bold tracking-wider uppercase shadow-[0_0_10px_rgba(168,85,247,0.1)]"
             >
               {dateBadge}
             </motion.span>
@@ -179,7 +179,7 @@ const TimelineItem = ({ entry, index }) => {
         {/* Type badge */}
         {(entry.type) && (
           <div className="mt-4 relative z-10">
-            <span className="text-[10px] px-2.5 py-1 rounded bg-gray-800/50 text-gray-400 border border-gray-700/50 uppercase tracking-widest font-bold">
+            <span className="text-xs sm:text-sm px-2.5 py-1 rounded bg-gray-800/50 text-gray-400 border border-gray-700/50 uppercase tracking-widest font-bold">
               {entry.type}
             </span>
           </div>
@@ -290,7 +290,7 @@ const Journey = () => {
                   hidden: { y: 60, opacity: 0 },
                   visible: { y: 0, opacity: 1, transition: { duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94], delay: i * 0.1 } }
                 }}
-                className="text-4xl md:text-5xl font-heading font-extrabold text-[#e2e8f0] mb-4 tracking-tight mr-4"
+                className="text-3xl sm:text-4xl md:text-5xl font-heading font-extrabold text-[#e2e8f0] mb-4 tracking-tight mr-3 last:mr-0"
               >
                 {word}
               </motion.h2>

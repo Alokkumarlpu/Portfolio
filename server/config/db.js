@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import Message from '../models/Message.js';
+import Contact from '../models/Contact.js';
 
 const connectDB = async () => {
   try {
@@ -22,9 +22,9 @@ const connectDB = async () => {
     console.log(`   Database: ${conn.connection.name}`);
     console.log(`   Port: ${conn.connection.port}\n`);
 
-    // Ensure the messages collection exists even before first write.
-    await Message.createCollection();
-    console.log('✅ Ensured MongoDB collection exists: messages');
+    // Ensure the contacts collection exists even before first write.
+    await Contact.createCollection();
+    console.log('✅ Ensured MongoDB collection exists: contacts');
 
     // Monitor connection events
     mongoose.connection.on('error', (err) => {

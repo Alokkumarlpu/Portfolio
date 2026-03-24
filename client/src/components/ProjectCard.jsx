@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { FiGithub, FiExternalLink, FiStar } from 'react-icons/fi';
 import Tilt from 'react-parallax-tilt';
+import React from 'react';
 
 const categoryConfig = {
   Web:   { gradient: 'from-violet-900 to-indigo-900', icon: '🌐', badge: 'bg-violet-500/20 text-violet-300 border-violet-500/30' },
@@ -37,16 +38,33 @@ const resolveProjectImage = (project) => {
 const ProjectCard = ({ project }) => {
   const config = categoryConfig[project.category] || categoryConfig.Other;
   const resolvedImage = resolveProjectImage(project);
+  const [isTouchDevice, setIsTouchDevice] = React.useState(false);
+  const [isHovered, setIsHovered] = React.useState(false);
+
+  React.useEffect(() => {
+    // Detect if device supports touch
+    const isTouchSupported = () => {
+      return (
+        (typeof window !== 'undefined' && ('ontouchstart' in window)) ||
+        (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(pointer:coarse)').matches)
+      );
+    };
+    setIsTouchDevice(isTouchSupported());
+  }, []);
 
   return (
     <Tilt
-      tiltMaxAngleX={8}
-      tiltMaxAngleY={8}
-      glareEnable={true}
+      tiltMaxAngleX={isTouchDevice ? 0 : 8}
+      tiltMaxAngleY={isTouchDevice ? 0 : 8}
+      glareEnable={!isTouchDevice}
       glareMaxOpacity={0.12}
       scale={1.02}
       transitionSpeed={400}
       className="h-full group"
+      onMouseEnter={() => !isTouchDevice && setIsHovered(true)}
+      onMouseLeave={() => !isTouchDevice && setIsHovered(false)}
+      onTouchStart={() => setIsHovered(true)}
+      onTouchEnd={() => setIsHovered(false)}
     >
       <style>{`
         @keyframes spin-border {
@@ -124,14 +142,18 @@ const ProjectCard = ({ project }) => {
               </div>
             )}
 
-            {/* Hover action icons — slide up with stagger */}
+            {/* Hover action icons — slide up with stagger, always visible on touch */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-4 z-30">
               {project.githubLink && (
                 <a
                   href={project.githubLink}
                   target="_blank"
                   rel="noreferrer"
-                  className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white flex items-center justify-center translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 hover:bg-[#7c3aed] hover:border-[#7c3aed] hover:scale-110 hover:shadow-[0_0_20px_rgba(124,58,237,0.5)]"
+                  className={`w-12 h-12 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white flex items-center justify-center transition-all duration-300 hover:bg-[#7c3aed] hover:border-[#7c3aed] hover:scale-110 hover:shadow-[0_0_20px_rgba(124,58,237,0.5)] ${
+                    isTouchDevice || isHovered
+                      ? 'translate-y-0 opacity-100'
+                      : 'translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100'
+                  }`}
                   style={{ transitionDelay: '0.1s' }}
                 >
                   <FiGithub className="w-5 h-5" />
@@ -142,7 +164,11 @@ const ProjectCard = ({ project }) => {
                   href={project.liveDemo}
                   target="_blank"
                   rel="noreferrer"
-                  className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white flex items-center justify-center translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 hover:bg-[#06b6d4] hover:border-[#06b6d4] hover:scale-110 hover:shadow-[0_0_20px_rgba(6,182,212,0.5)]"
+                  className={`w-12 h-12 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white flex items-center justify-center transition-all duration-300 hover:bg-[#06b6d4] hover:border-[#06b6d4] hover:scale-110 hover:shadow-[0_0_20px_rgba(6,182,212,0.5)] ${
+                    isTouchDevice || isHovered
+                      ? 'translate-y-0 opacity-100'
+                      : 'translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100'
+                  }`}
                   style={{ transitionDelay: '0.2s' }}
                 >
                   <FiExternalLink className="w-5 h-5" />

@@ -125,12 +125,12 @@ const CertificateCard = ({ cert }) => {
 
         {/* Top Banner Area */}
         <div 
-          className="relative h-48 overflow-hidden bg-[#050510] border-b border-white/5"
+          className="relative h-40 sm:h-48 overflow-hidden bg-[#050510] border-b border-white/5"
           style={{ transform: 'translateZ(25px)' }}
         >
           {/* Background Icon/Glow */}
           <div className="absolute inset-0 flex items-center justify-center bg-[radial-gradient(ellipse_at_center,rgba(124,58,237,0.15)_0%,rgba(5,5,16,1)_80%)] text-white/10 z-0">
-            <span className="text-7xl filter drop-shadow-[0_0_20px_rgba(124,58,237,0.4)] transform group-hover:scale-125 group-hover:rotate-12 transition-all duration-700">
+            <span className="text-5xl sm:text-6xl md:text-7xl filter drop-shadow-[0_0_20px_rgba(124,58,237,0.4)] transform group-hover:scale-125 group-hover:rotate-12 transition-all duration-700">
               {cert.icon || "📜"}
             </span>
           </div>

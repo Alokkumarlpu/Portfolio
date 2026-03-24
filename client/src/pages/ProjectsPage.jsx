@@ -33,7 +33,7 @@ const ProjectsPage = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[#050510] pt-28 pb-20 relative overflow-hidden">
+    <div className="min-h-screen bg-[#050510] pt-24 md:pt-28 pb-16 md:pb-20 relative overflow-hidden">
       {/* Background radial fade */}
       <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,rgba(6,182,212,0.05)_0%,rgba(5,5,16,1)_70%)] pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-full h-1/2 bg-[radial-gradient(ellipse_at_bottom_left,rgba(124,58,237,0.05)_0%,rgba(5,5,16,1)_70%)] pointer-events-none" />
@@ -45,7 +45,7 @@ const ProjectsPage = () => {
            animate="visible"
            className="text-center mb-16 flex flex-col items-center"
         >
-          <h1 className="text-4xl md:text-5xl font-heading font-extrabold text-[#e2e8f0] mb-4 tracking-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-heading font-extrabold text-[#e2e8f0] mb-4 tracking-tight">
             All Projects
           </h1>
           <p className="text-lg text-[#64748b] max-w-2xl mx-auto mb-6">
@@ -54,13 +54,13 @@ const ProjectsPage = () => {
           <div className="w-24 h-1.5 bg-gradient-to-r from-[#06b6d4] to-[#7c3aed] rounded-full drop-shadow-[0_0_8px_rgba(6,182,212,0.6)]"></div>
         </motion.div>
 
-        <div className="flex justify-center mb-16 overflow-x-auto pb-4 custom-scrollbar">
-          <div className="flex gap-2 bg-white/5 backdrop-blur-md p-2 rounded-full shadow-[0_0_15px_rgba(0,0,0,0.2)] border border-white/10">
+        <div className="flex justify-start sm:justify-center mb-12 md:mb-16 overflow-x-auto pb-3 custom-scrollbar">
+          <div className="flex gap-2 bg-white/5 backdrop-blur-md p-2 rounded-full shadow-[0_0_15px_rgba(0,0,0,0.2)] border border-white/10 min-w-max">
             {categories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setFilter(cat)}
-                className={`px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 whitespace-nowrap
+                className={`px-5 sm:px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 whitespace-nowrap
                   ${filter === cat 
                     ? 'bg-gradient-to-r from-[#7c3aed] to-[#06b6d4] text-white shadow-[0_0_15px_rgba(124,58,237,0.4)]' 
                     : 'text-[#94a3b8] hover:bg-white/10 hover:text-white'

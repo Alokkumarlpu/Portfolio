@@ -59,17 +59,17 @@ const Hero = () => {
 
 
   return (
-    <section id="hero" className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden bg-[#050510]">
+    <section id="hero" className="relative min-h-screen flex items-center justify-center pt-24 pb-14 overflow-hidden bg-[#050510]">
       <HeroCanvas />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10 flex flex-col-reverse md:flex-row items-center justify-between pointer-events-none">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10 flex flex-col-reverse md:flex-row items-center justify-between pointer-events-none gap-8 md:gap-0">
 
         {/* LEFT COLUMN - TEXT */}
         <div className="md:w-[55%] mt-12 md:mt-0 text-center md:text-left pointer-events-auto">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-xl md:text-2xl text-[#06b6d4] font-medium mb-3 font-mono tracking-wide h-8"
+            className="text-lg md:text-2xl text-[#06b6d4] font-medium mb-3 font-mono tracking-wide min-h-8"
           >
             {scrambledHello}
           </motion.div>
@@ -87,7 +87,7 @@ const Hero = () => {
                   type: 'spring',
                   stiffness: 100
                 }}
-                className="text-5xl md:text-7xl font-heading font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-[#7c3aed] to-[#06b6d4] drop-shadow-[0_0_15px_rgba(124,58,237,0.3)] min-w-[15px]"
+                className="text-4xl sm:text-5xl md:text-7xl font-heading font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-[#7c3aed] to-[#06b6d4] drop-shadow-[0_0_15px_rgba(124,58,237,0.3)] leading-[1.1]"
               >
                 {letter === ' ' ? '\u00A0' : letter}
               </motion.span>
@@ -95,7 +95,7 @@ const Hero = () => {
           </div>
 
           {roles.length > 0 && (
-            <div className="text-2xl md:text-4xl font-semibold text-gray-300 mb-6 flex flex-wrap items-center justify-center md:justify-start">
+            <div className="text-xl sm:text-2xl md:text-4xl font-semibold text-gray-300 mb-6 flex flex-wrap items-center justify-center md:justify-start">
               <span className="mr-2">A</span>
               <TypeAnimation
                 sequence={typeSequence}
@@ -107,14 +107,14 @@ const Hero = () => {
             </div>
           )}
 
-          <div className="flex flex-wrap justify-center md:justify-start mb-10 max-w-xl">
+          <div className="flex flex-wrap justify-center md:justify-start mb-10 max-w-xl mx-auto md:mx-0">
             {bioWords.map((word, i) => (
               <motion.span
                 key={i}
                 initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.8 + i * 0.03 }}
-                className="text-lg text-[#64748b] mr-1.5 mb-1"
+                className="text-base md:text-lg text-[#64748b] mr-1.5 mb-1"
               >
                 {word}
               </motion.span>
@@ -127,11 +127,11 @@ const Hero = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 1.8 }}
-            className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4"
+            className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center md:justify-start gap-4 w-full sm:w-auto"
           >
             <MagneticButton
               to="/projects"
-              className="group px-8 py-3.5 bg-gradient-to-r from-[#7c3aed] to-[#06b6d4] text-white rounded-full shadow-[0_0_20px_rgba(124,58,237,0.4)] active:scale-95 transition-all hover:shadow-[0_0_30px_rgba(124,58,237,0.6)] animate-pulse"
+              className="group w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-[#7c3aed] to-[#06b6d4] text-white rounded-full shadow-[0_0_20px_rgba(124,58,237,0.4)] active:scale-95 transition-all hover:shadow-[0_0_30px_rgba(124,58,237,0.6)] animate-pulse"
             >
               <span>View Projects</span>
               <FiArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -156,7 +156,7 @@ const Hero = () => {
                   window.open(url, '_blank');
                 }
               }}
-              className="group px-8 py-3.5 bg-transparent border-2 border-[#7c3aed]/50 text-[#e2e8f0] hover:bg-[#7c3aed]/10 hover:border-[#7c3aed] rounded-full flex items-center cursor-pointer transition-all"
+              className="group w-full sm:w-auto px-8 py-3.5 bg-transparent border-2 border-[#7c3aed]/50 text-[#e2e8f0] hover:bg-[#7c3aed]/10 hover:border-[#7c3aed] rounded-full flex items-center justify-center cursor-pointer transition-all"
             >
               <span>Download Resume</span>
               <FiDownload className="ml-2 w-5 h-5 group-hover:translate-y-1 transition-transform" />
@@ -169,7 +169,7 @@ const Hero = () => {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1, delay: 0.4 }}
-          className="md:w-[45%] flex justify-center mt-10 md:mt-0 pointer-events-auto"
+          className="md:w-[45%] flex justify-center mt-2 md:mt-0 pointer-events-auto"
         >
           <Tilt
             tiltMaxAngleX={10}
@@ -203,7 +203,7 @@ const Hero = () => {
              `}</style>
 
             <div className="animated-border-avatar relative shadow-[0_0_40px_rgba(124,58,237,0.3)] group">
-              <div className="w-64 h-64 md:w-80 md:h-80 rounded-full overflow-hidden bg-[#0a0a1a] relative z-10 flex items-center justify-center">
+              <div className="w-52 h-52 sm:w-64 sm:h-64 md:w-80 md:h-80 rounded-full overflow-hidden bg-[#0a0a1a] relative z-10 flex items-center justify-center">
                 {(profile?.profileImage && !imageError) ? (
                   <img
                     src={profile.profileImage}
@@ -212,7 +212,7 @@ const Hero = () => {
                     onError={() => setImageError(true)}
                   />
                 ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-[#7c3aed] to-[#06b6d4] flex items-center justify-center text-white text-8xl font-bold font-heading">
+                  <div className="w-full h-full bg-gradient-to-br from-[#7c3aed] to-[#06b6d4] flex items-center justify-center text-white text-6xl sm:text-8xl font-bold font-heading">
                     {profile?.name ? profile.name.charAt(0) : 'A'}
                   </div>
                 )}
@@ -229,7 +229,7 @@ const Hero = () => {
         animate={{ opacity: 0.6 }}
         whileHover={{ opacity: 1 }}
         transition={{ delay: 2.5, duration: 1 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none"
+        className="absolute bottom-4 left-1/2 -translate-x-1/2 hidden md:flex flex-col items-center pointer-events-none"
       >
         <div className="w-6 h-10 border-2 border-[#7c3aed]/40 rounded-full flex justify-center p-1 relative">
           <motion.div

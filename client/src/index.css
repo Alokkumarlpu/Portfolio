@@ -23,12 +23,25 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
   }
   body {
     background-color: var(--bg-primary);
     color: var(--text-primary);
     font-family: var(--font-body);
     transition: background-color 0.3s ease, color 0.3s ease;
+    overflow-x: hidden;
+  }
+  #root {
+    min-height: 100vh;
+    overflow-x: clip;
+  }
+  *, *::before, *::after {
+    box-sizing: border-box;
+    min-width: 0;
+  }
+  img, svg, video, canvas {
+    max-width: 100%;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
@@ -62,4 +75,14 @@ body::after {
 ::selection {
   background: rgba(124, 58, 237, 0.3);
   color: #e2e8f0;
+}
+
+@media (max-width: 640px) {
+  html {
+    font-size: 15px;
+  }
+
+  section {
+    scroll-margin-top: 84px;
+  }
 }

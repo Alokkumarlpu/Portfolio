@@ -30,9 +30,14 @@ const Contact = () => {
       reset();
       setTimeout(() => setStatus({ type: '', message: '' }), 5000);
     } catch (error) {
+      const backendMessage =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        error?.message;
+
       setStatus({
         type: 'error',
-        message: error.response?.data?.message || 'Failed to send message. Please try again.'
+        message: backendMessage || 'Failed to send message. Please try again.'
       });
     } finally {
       setIsSubmitting(false);
@@ -40,7 +45,7 @@ const Contact = () => {
   };
 
   return (
-    <section id="contact" className="py-24 bg-[#050510] transition-colors relative overflow-hidden">
+    <section id="contact" className="py-20 md:py-24 bg-[#050510] transition-colors relative overflow-hidden">
 
       {/* Background radial fade overlay */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(5,5,16,0.5)_0%,rgba(5,5,16,1)_100%)] pointer-events-none z-0" />
@@ -50,12 +55,12 @@ const Contact = () => {
         <motion.div
           animate={{ x: [0, 100, 0], y: [0, 50, 0] }}
           transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          className="absolute -top-20 -left-20 w-64 h-64 bg-[#7c3aed]/10 blur-[100px] rounded-full"
+          className="absolute -top-12 -left-12 md:-top-20 md:-left-20 w-40 h-40 sm:w-56 sm:h-56 md:w-64 md:h-64 bg-[#7c3aed]/10 blur-[100px] rounded-full"
         />
         <motion.div
           animate={{ x: [0, -100, 0], y: [0, -50, 0] }}
           transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-          className="absolute -bottom-20 -right-20 w-80 h-80 bg-[#06b6d4]/10 blur-[100px] rounded-full"
+          className="absolute -bottom-12 -right-12 md:-bottom-20 md:-right-20 w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 bg-[#06b6d4]/10 blur-[100px] rounded-full"
         />
       </div>
 
@@ -76,7 +81,7 @@ const Contact = () => {
                   hidden: { y: 60, opacity: 0 },
                   visible: { y: 0, opacity: 1, transition: { duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94], delay: i * 0.1 } }
                 }}
-                className="text-4xl md:text-5xl font-heading font-extrabold text-[#e2e8f0] mb-4 tracking-tight mr-4"
+                className="text-3xl sm:text-4xl md:text-5xl font-heading font-extrabold text-[#e2e8f0] mb-4 tracking-tight mr-3 last:mr-0"
               >
                 {word}
               </motion.h2>
@@ -98,7 +103,7 @@ const Contact = () => {
           </motion.p>
         </motion.div>
 
-        <div className="flex flex-col lg:flex-row gap-12 xl:gap-20">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-12 xl:gap-20">
 
           {/* Left Column: Contact Info & Illustration */}
           <motion.div
@@ -135,14 +140,14 @@ const Contact = () => {
                    hidden: { opacity: 0, x: -50 },
                    visible: { opacity: 1, x: 0, transition: { duration: 0.6 } }
                  }} 
-                 className="bg-white/5 backdrop-blur-xl p-6 rounded-3xl flex items-start space-x-4 border border-white/10 shadow-lg hover:border-[#7c3aed]/50 transition-all duration-300 group hover:translate-x-2"
+                  className="bg-white/5 backdrop-blur-xl p-4 sm:p-5 md:p-6 rounded-3xl flex items-start gap-3 sm:gap-4 border border-white/10 shadow-lg hover:border-[#7c3aed]/50 transition-all duration-300 group hover:translate-x-1 md:hover:translate-x-2"
               >
-                <div className="bg-[#7c3aed]/20 p-4 rounded-2xl text-[#7c3aed] group-hover:rotate-[360deg] transition-transform duration-500 shadow-[0_0_15px_rgba(124,58,237,0.3)]">
-                  <FiMail className="w-6 h-6" />
+                <div className="bg-[#7c3aed]/20 p-3 sm:p-4 rounded-2xl text-[#7c3aed] group-hover:rotate-[360deg] transition-transform duration-500 shadow-[0_0_15px_rgba(124,58,237,0.3)] shrink-0">
+                  <FiMail className="w-5 sm:w-6 h-5 sm:h-6" />
                 </div>
                 <div>
-                  <h4 className="text-lg font-bold text-white mb-1 font-heading">Email</h4>
-                  <a href={`mailto:${profile?.email || 'alokkumar985642@gmail.com'}`} className="text-[#94a3b8] hover:text-[#06b6d4] transition-colors break-all font-body">
+                  <h4 className="text-base sm:text-lg font-bold text-white mb-1 font-heading">Email</h4>
+                  <a href={`mailto:${profile?.email || 'alokkumar985642@gmail.com'}`} className="text-sm sm:text-base text-[#94a3b8] hover:text-[#06b6d4] transition-colors break-all font-body">
                     {profile?.email || 'alokkumar985642@gmail.com'}
                   </a>
                 </div>
@@ -155,10 +160,10 @@ const Contact = () => {
                    hidden: { opacity: 0, x: -50 },
                    visible: { opacity: 1, x: 0, transition: { duration: 0.6, delay: 0.1 } }
                  }} 
-                 className="bg-white/5 backdrop-blur-xl p-6 rounded-3xl flex items-start space-x-4 border border-white/10 shadow-lg hover:border-[#06b6d4]/50 transition-all duration-300 group hover:translate-x-2"
+                  className="bg-white/5 backdrop-blur-xl p-4 sm:p-5 md:p-6 rounded-3xl flex items-start gap-3 sm:gap-4 border border-white/10 shadow-lg hover:border-[#06b6d4]/50 transition-all duration-300 group hover:translate-x-1 md:hover:translate-x-2"
               >
-                <div className="bg-[#06b6d4]/20 p-4 rounded-2xl text-[#06b6d4] group-hover:rotate-[360deg] transition-transform duration-500 shadow-[0_0_15px_rgba(6,182,212,0.3)]">
-                  <FiPhone className="w-6 h-6" />
+                <div className="bg-[#06b6d4]/20 p-3 sm:p-4 rounded-2xl text-[#06b6d4] group-hover:rotate-[360deg] transition-transform duration-500 shadow-[0_0_15px_rgba(6,182,212,0.3)] shrink-0">
+                  <FiPhone className="w-5 sm:w-6 h-5 sm:h-6" />
                 </div>
                 <div>
                   <h4 className="text-lg font-bold text-white mb-1 font-heading">Phone</h4>
@@ -184,7 +189,7 @@ const Contact = () => {
             <motion.div 
               animate={status.type === 'error' ? { x: [0, -10, 10, -10, 10, 0] } : {}}
               transition={{ duration: 0.4 }}
-              className="bg-white/5 backdrop-blur-2xl p-8 md:p-10 rounded-3xl shadow-[0_20px_40px_rgba(0,0,0,0.4)] border border-white/10 relative overflow-hidden group/form"
+              className="bg-white/5 backdrop-blur-2xl p-5 sm:p-7 md:p-10 rounded-3xl shadow-[0_20px_40px_rgba(0,0,0,0.4)] border border-white/10 relative overflow-hidden group/form"
             >
               {/* Form Glow Effect */}
               <div className="absolute -inset-0.5 bg-gradient-to-br from-[#7c3aed]/20 to-[#06b6d4]/20 rounded-3xl opacity-0 group-hover/form:opacity-100 transition-opacity duration-1000 blur-xl z-0" />

@@ -34,7 +34,7 @@ const Projects = () => {
   );
 
   return (
-    <section id="projects" className="py-24 relative overflow-hidden bg-[#050510]">
+    <section id="projects" className="py-20 md:py-24 relative overflow-hidden bg-[#050510]">
       <div className="absolute bottom-0 left-0 w-full h-1/2 bg-[radial-gradient(ellipse_at_bottom_left,rgba(124,58,237,0.05)_0%,rgba(5,5,16,1)_70%)] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -53,7 +53,7 @@ const Projects = () => {
                   hidden: { y: 60, opacity: 0 },
                   visible: { y: 0, opacity: 1, transition: { duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94], delay: i * 0.1 } }
                 }}
-                className="text-3xl md:text-5xl font-heading font-extrabold text-[#e2e8f0] mb-4 tracking-tight mr-4"
+                className="text-3xl md:text-5xl font-heading font-extrabold text-[#e2e8f0] mb-4 tracking-tight mr-3 last:mr-0"
               >
                 {word}
               </motion.h2>
@@ -76,12 +76,12 @@ const Projects = () => {
         </motion.div>
 
         {/* Filter tabs with sliding indicator */}
-        <div className="flex justify-center gap-2 mb-12 flex-wrap relative p-1 bg-white/5 rounded-full w-fit mx-auto border border-white/10">
+        <div className="flex justify-start sm:justify-center gap-2 mb-12 flex-nowrap sm:flex-wrap overflow-x-auto pb-1 sm:pb-0 relative p-1 bg-white/5 rounded-full w-full sm:w-fit mx-auto border border-white/10">
           {categories.map(cat => (
             <button
               key={cat}
               onClick={() => setFilter(cat)}
-              className={`relative z-10 text-xs font-semibold px-6 py-2.5 rounded-full transition-colors duration-300
+              className={`relative z-10 text-xs font-semibold px-5 sm:px-6 py-2.5 rounded-full transition-colors duration-300 whitespace-nowrap
                 ${filter === cat ? 'text-white' : 'text-gray-400 hover:text-white'}`}
             >
               <span className="relative z-10">{cat}</span>

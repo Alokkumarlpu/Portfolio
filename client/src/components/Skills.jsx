@@ -169,7 +169,7 @@ const Skills = () => {
                   hidden: { y: 80, opacity: 0 },
                   visible: { y: 0, opacity: 1, transition: { duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94], delay: i * 0.1 } }
                 }}
-                className="text-4xl md:text-5xl font-heading font-extrabold text-[#e2e8f0] mb-4 tracking-tight mr-4"
+                className="text-3xl sm:text-4xl md:text-5xl font-heading font-extrabold text-[#e2e8f0] mb-4 tracking-tight mr-3 last:mr-0"
               >
                 {word}
               </motion.h2>

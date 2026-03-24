@@ -238,7 +238,7 @@ const ProfileTab = ({ profile, refetchProfile }) => {
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm space-y-4">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Input label="Full Name" name="name" value={values.name} onChange={handleChange} />
           <Input label="Job Title" name="title" value={values.title} onChange={handleChange} />
           <Input label="Email" name="email" value={values.email} onChange={handleChange} />
@@ -251,7 +251,7 @@ const ProfileTab = ({ profile, refetchProfile }) => {
           <textarea name="bio" value={values.bio} onChange={handleChange} rows="3" className="w-full px-4 py-2 border rounded-lg bg-gray-50 dark:bg-gray-950 dark:border-gray-800"></textarea>
         </div>
         <h3 className="font-bold pt-4">Social Links</h3>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Input label="GitHub URL" name="github" value={values.github} onChange={handleChange} />
           <Input label="LinkedIn URL" name="linkedin" value={values.linkedin} onChange={handleChange} />
           <Input label="Twitter URL" name="twitter" value={values.twitter} onChange={handleChange} />
@@ -317,7 +317,7 @@ const SkillsTab = ({ skills, refetchSkills }) => {
 
       {isAdding && (
         <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 mb-8 space-y-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <Input label="Name" name="name" value={values.name} onChange={handleChange} required />
             <div>
               <label className="block text-sm font-medium mb-1">Category</label>
@@ -379,7 +379,7 @@ const ExperienceTab = ({ experience, refetchExperience }) => {
 
       {isAdding && (
         <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 mb-8 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input label="Job/Degree Title" name="title" value={values.title} onChange={handleChange} required />
             <Input label="Company/Institution" name="company" value={values.company} onChange={handleChange} required />
             <div>
@@ -457,7 +457,7 @@ const ProjectsTab = ({ projects, refetchProjects }) => {
 
       {isAdding && (
         <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 mb-8 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input label="Title" name="title" value={values.title} onChange={handleChange} required />
             <div>
               <label className="block text-sm mb-1">Category</label>

@@ -54,14 +54,14 @@ const Footer = () => {
           <span className="text-white/90 font-heading"> Portfolio</span>
         </motion.div>
         
-        <div className="flex space-x-6 mb-12">
+        <div className="flex flex-wrap justify-center gap-4 sm:gap-6 mb-12">
           {socialLinks.map((social, index) => {
             const Icon = social.icon;
             return (
               <MagneticButton 
                 key={index}
                 href={social.url} 
-                className={`p-4 rounded-2xl border text-[#94a3b8] transition-all duration-300 backdrop-blur-md flex items-center justify-center relative overflow-hidden group/social ${social.color}`}
+                className={`p-4 sm:p-5 rounded-2xl border text-[#94a3b8] transition-all duration-300 backdrop-blur-md flex items-center justify-center relative overflow-hidden group/social ${social.color}`}
               >
                 <motion.div
                   initial={false}
@@ -99,12 +99,12 @@ const Footer = () => {
             initial={{ opacity: 0, scale: 0.5, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.5, y: 20 }}
-            className="fixed bottom-8 right-8 z-50 pointer-events-auto"
+            className="fixed bottom-5 right-4 sm:bottom-8 sm:right-8 z-50 pointer-events-auto"
           >
             <Tilt tiltMaxAngleX={20} tiltMaxAngleY={20} scale={1.1} perspective={1000}>
               <button
                 onClick={scrollToTop}
-                className="w-14 h-14 bg-[#0a0a1a] text-white rounded-full shadow-[0_0_20px_rgba(124,58,237,0.5)] active:scale-95 border border-white/10 flex items-center justify-center relative overflow-hidden group"
+                className="w-12 h-12 sm:w-14 sm:h-14 bg-[#0a0a1a] text-white rounded-full shadow-[0_0_20px_rgba(124,58,237,0.5)] active:scale-95 border border-white/10 flex items-center justify-center relative overflow-hidden group"
               >
                 {/* Circular Progress SVG */}
                 <svg className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none">

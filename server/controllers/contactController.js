@@ -1,4 +1,4 @@
-import Message from '../models/Message.js';
+import Contact from '../models/Contact.js';
 import { sendContactEmail } from '../utils/sendEmail.js';
 
 export const submitContact = async (req, res, next) => {
@@ -11,9 +11,9 @@ export const submitContact = async (req, res, next) => {
       throw new Error('name, email, and message are required');
     }
 
-    const savedMessage = new Message({ name, email, message });
+    const savedMessage = new Contact({ name, email, message });
     await savedMessage.save();
-    console.log('[CONTACT] Message saved to MongoDB:', { id: savedMessage._id, email, collection: 'messages' });
+    console.log('[CONTACT] Message saved to MongoDB:', { id: savedMessage._id, email, collection: 'contacts' });
 
     try {
       await sendContactEmail(name, email, message);
@@ -35,7 +35,7 @@ export const submitContact = async (req, res, next) => {
 
 export const getAllMessages = async (req, res, next) => {
   try {
-    const messages = await Message.find({}).sort({ createdAt: -1 });
+    const messages = await Contact.find({}).sort({ createdAt: -1 });
     res.json(messages);
   } catch (error) {
     next(error);
@@ -44,7 +44,7 @@ export const getAllMessages = async (req, res, next) => {
 
 export const markAsRead = async (req, res, next) => {
   try {
-    const message = await Message.findById(req.params.id);
+    const message = await Contact.findById(req.params.id);
 
     if (message) {
       message.isRead = true;

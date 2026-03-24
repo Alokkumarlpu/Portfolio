@@ -23,6 +23,17 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [location]);
 
+  useEffect(() => {
+    if (!isOpen) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOpen]);
+
   const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'About', path: '/#about' },
@@ -137,7 +148,7 @@ const Navbar = () => {
                 animate={{ x: 0 }}
                 exit={{ x: '100%' }}
                 transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                className="fixed top-0 right-0 w-64 h-screen bg-white/90 dark:bg-[#0a0a1a]/95 backdrop-blur-2xl border-l border-gray-200 dark:border-white/10 z-50 md:hidden flex flex-col pt-24 px-6 shadow-2xl"
+                className="fixed top-0 right-0 w-[82vw] max-w-xs h-screen bg-white/90 dark:bg-[#0a0a1a]/95 backdrop-blur-2xl border-l border-gray-200 dark:border-white/10 z-50 md:hidden flex flex-col pt-24 px-6 shadow-2xl"
               >
                 {navLinks.map((link) => (
                   <a
