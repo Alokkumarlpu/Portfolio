@@ -13,7 +13,7 @@ const sanitizePass = (value = '') => String(value).replace(/\s+/g, '');
 
 const validateEmailEnv = () => {
   console.log('[EMAIL] Validating environment variables...');
-  
+
   const missing = REQUIRED_EMAIL_ENV.filter((key) => !process.env[key]);
   if (missing.length > 0) {
     console.error('[EMAIL] CRITICAL: Missing env vars:', missing);
@@ -51,49 +51,84 @@ const validateEmailEnv = () => {
   };
 };
 
-const createGmailTransporter = () => {
-  const { emailUser, emailPass } = validateEmailEnv();
+const baseTransporterConfig = (emailUser, emailPass, port, secure) => ({
+  host: 'smtp.gmail.com',
+  port,
+  secure,
+  requireTLS: !secure,
+  auth: {
+    user: emailUser,
+    pass: emailPass,
+  },
+  logger: true,
+  debug: true,
+  connectionTimeout: 15000,
+  greetingTimeout: 10000,
+  socketTimeout: 20000,
+  tls: {
+    minVersion: 'TLSv1.2',
+    rejectUnauthorized: true,
+  },
+});
 
-  const transporterConfig = {
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
-    auth: {
-      user: emailUser,
-      pass: emailPass,
-    },
-    logger: true,
-    debug: true,
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 15000,
-    maxConnections: 1,
-    maxMessages: 5,
-    pool: true,
-    rateLimit: true,
-    tls: {
-      minVersion: 'TLSv1.2',
-      rejectUnauthorized: true,
-      ciphers: 'HIGH:!aNULL:!MD5',
-    },
-  };
-
-  const transporter = nodemailer.createTransport(transporterConfig);
-
-  console.log('[EMAIL] Transporter created with config:', {
-    host: transporterConfig.host,
-    port: transporterConfig.port,
-    secure: transporterConfig.secure,
-    pool: transporterConfig.pool,
-    maxConnections: transporterConfig.maxConnections,
-    tlsVersion: 'TLSv1.2+',
+const logTransporterConfig = (label, emailUser, emailPass, config) => {
+  console.log(`[EMAIL] ${label} transporter config:`, {
+    host: config.host,
+    port: config.port,
+    secure: config.secure,
+    requireTLS: config.requireTLS,
     user: maskEmail(emailUser),
     passLength: emailPass.length,
     node: process.version,
     env: process.env.NODE_ENV,
   });
+};
 
-  return transporter;
+const createGmailTransporterWithFallback = async () => {
+  const { emailUser, emailPass } = validateEmailEnv();
+
+  const primaryConfig = baseTransporterConfig(emailUser, emailPass, 465, true);
+  logTransporterConfig('Primary', emailUser, emailPass, primaryConfig);
+
+  const primaryTransporter = nodemailer.createTransport(primaryConfig);
+
+  try {
+    console.log('[EMAIL] Verifying primary SMTP config (465/secure)...');
+    await primaryTransporter.verify();
+    console.log('[EMAIL] Primary SMTP verify success (465/secure)');
+    return { transporter: primaryTransporter, configUsed: { port: 465, secure: true } };
+  } catch (primaryErr) {
+    console.error('[EMAIL] Primary SMTP verify failed:', {
+      message: primaryErr?.message,
+      code: primaryErr?.code,
+      responseCode: primaryErr?.responseCode,
+      stack: primaryErr?.stack,
+    });
+  }
+
+  const fallbackConfig = baseTransporterConfig(emailUser, emailPass, 587, false);
+  logTransporterConfig('Fallback', emailUser, emailPass, fallbackConfig);
+
+  const fallbackTransporter = nodemailer.createTransport(fallbackConfig);
+
+  try {
+    console.log('[EMAIL] Verifying fallback SMTP config (587/starttls)...');
+    await fallbackTransporter.verify();
+    console.log('[EMAIL] Fallback SMTP verify success (587/starttls)');
+    return { transporter: fallbackTransporter, configUsed: { port: 587, secure: false } };
+  } catch (fallbackErr) {
+    console.error('[EMAIL] Fallback SMTP verify failed:', {
+      message: fallbackErr?.message,
+      code: fallbackErr?.code,
+      responseCode: fallbackErr?.responseCode,
+      stack: fallbackErr?.stack,
+    });
+
+    const finalError = new Error('SMTP verification failed for both 465(secure) and 587(starttls). Check EMAIL_USER, EMAIL_PASS(App Password), and Render env vars.');
+    finalError.statusCode = 500;
+    finalError.cause = fallbackErr;
+    throw finalError;
+  }
 };
 
 const mapEmailError = (error) => {
@@ -159,17 +194,18 @@ export const sendContactEmail = async (name, email, message) => {
   });
 
   let transporter;
+  let configUsed;
   try {
-    transporter = createGmailTransporter();
+    const result = await createGmailTransporterWithFallback();
+    transporter = result.transporter;
+    configUsed = result.configUsed;
   } catch (err) {
     console.error('[EMAIL] Failed to create transporter:', err.message);
     throw err;
   }
 
   try {
-    console.log('[EMAIL] Verifying SMTP connection...');
-    await transporter.verify();
-    console.log('[EMAIL] SMTP connection verified successfully');
+    console.log('[EMAIL] Using SMTP config:', configUsed);
 
     const ownerAddress = process.env.EMAIL_USER;
 
@@ -263,17 +299,18 @@ export const sendTestEmail = async (recipientEmail) => {
   console.log('[EMAIL][TEST] Recipient:', maskEmail(to));
 
   let transporter;
+  let configUsed;
   try {
-    transporter = createGmailTransporter();
+    const result = await createGmailTransporterWithFallback();
+    transporter = result.transporter;
+    configUsed = result.configUsed;
   } catch (err) {
     console.error('[EMAIL][TEST] Failed to create transporter:', err.message);
     throw err;
   }
 
   try {
-    console.log('[EMAIL][TEST] Verifying SMTP connection...');
-    await transporter.verify();
-    console.log('[EMAIL][TEST] SMTP connection verified successfully');
+    console.log('[EMAIL][TEST] Using SMTP config:', configUsed);
 
     const testMailOptions = {
       from: `"Portfolio API Test" <${process.env.EMAIL_USER}>`,
@@ -306,6 +343,7 @@ export const sendTestEmail = async (recipientEmail) => {
     return {
       success: true,
       to,
+      smtp: configUsed,
       messageId: info.messageId,
       response: info.response,
       timestamp: new Date().toISOString(),

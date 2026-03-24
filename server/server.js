@@ -179,20 +179,46 @@ app.use('/api/certificates', certificateRoutes);
 app.use('/api/achievements', achievementRoutes);
 
 app.get('/api/test-email', async (req, res) => {
+  const requestId = `test-email-${Date.now()}`;
+  const recipient = req.query.to || process.env.EMAIL_USER;
+
+  console.log(`[API][TEST-EMAIL][${requestId}] Incoming request`, {
+    method: req.method,
+    path: req.originalUrl,
+    recipient,
+    envLoaded: {
+      EMAIL_USER: Boolean(process.env.EMAIL_USER),
+      EMAIL_PASS: Boolean(process.env.EMAIL_PASS),
+      EMAIL_PASS_LENGTH: process.env.EMAIL_PASS ? String(process.env.EMAIL_PASS).replace(/\s+/g, '').length : 0,
+    },
+  });
+
   try {
-    const recipient = req.query.to || process.env.EMAIL_USER;
     const result = await sendTestEmail(recipient);
+    console.log(`[API][TEST-EMAIL][${requestId}] Success`, result);
+
     res.status(200).json({
       success: true,
       message: 'Test email sent successfully',
+      requestId,
       data: result,
     });
   } catch (err) {
-    console.error('[API][TEST-EMAIL] Failed:', {
+    console.error(`[API][TEST-EMAIL][${requestId}] Failed`);
+    console.error('[API][TEST-EMAIL] Error details:', {
       message: err?.message,
+      code: err?.code,
+      responseCode: err?.responseCode,
+      command: err?.command,
       stack: err?.stack,
     });
-    res.status(500).json({ success: false, error: err.message });
+
+    res.status(500).json({
+      success: false,
+      message: 'Test email failed',
+      requestId,
+      error: err?.message || 'Unknown email test error',
+    });
   }
 });
 
@@ -203,6 +229,7 @@ app.get('/', (req, res) => {
     endpoints: {
       health: '/api/health',
       config: '/api/config',
+      testEmail: '/api/test-email',
       profile: '/api/profile',
       projects: '/api/projects',
       auth: '/api/auth/login',
