@@ -4,31 +4,69 @@ import { sendContactEmail } from '../utils/sendEmail.js';
 export const submitContact = async (req, res, next) => {
   try {
     const { name, email, message } = req.body;
-    console.log('Form data:', { name, email, message });
+    console.log('[SUBMIT-CONTACT] Received form submission:', {
+      nameProvided: !!name,
+      emailProvided: !!email,
+      messageProvided: !!message,
+    });
 
     if (!name || !email || !message) {
-      res.status(400);
-      throw new Error('name, email, and message are required');
+      const error = new Error('name, email, and message are required');
+      error.statusCode = 400;
+      throw error;
     }
 
-    const savedMessage = new Contact({ name, email, message });
+    console.log('[SUBMIT-CONTACT] Saving message to MongoDB...');
+    const savedMessage = new Contact({
+      name: name.trim(),
+      email: email.trim(),
+      message: message.trim(),
+      isRead: false,
+    });
     await savedMessage.save();
-    console.log('[CONTACT] Message saved to MongoDB:', { id: savedMessage._id, email, collection: 'contacts' });
+    console.log('[SUBMIT-CONTACT] Message saved successfully:', {
+      id: savedMessage._id,
+      email: email.trim(),
+      collection: 'contacts',
+    });
 
+    console.log('[SUBMIT-CONTACT] Attempting to send email...');
+    let emailResult;
     try {
-      await sendContactEmail(name, email, message);
+      emailResult = await sendContactEmail(name, email, message);
+      console.log('[SUBMIT-CONTACT] Email sent successfully:', emailResult);
     } catch (emailError) {
-      console.error('[CONTACT] Email delivery failed after save:', {
+      console.error('[SUBMIT-CONTACT] CRITICAL: Email delivery failed after save');
+      console.error('[SUBMIT-CONTACT] Email error details:', {
         contactId: savedMessage._id,
-        message: emailError?.message,
-        stack: emailError?.stack,
+        originalMessage: emailError?.message,
+        originalCode: emailError?.code,
+        originalResponseCode: emailError?.responseCode,
+        originalStack: emailError?.stack,
       });
-      res.status(500);
-      throw new Error('Message saved, but email delivery failed. Check server email configuration.');
+
+      const error = new Error('Message saved, but email delivery failed. Check server email configuration.');
+      error.statusCode = 500;
+      error.contactId = savedMessage._id;
+      error.emailError = emailError;
+      throw error;
     }
 
-    res.json({ success: true, message: 'Message sent!' });
+    console.log('[SUBMIT-CONTACT] Form submission completed successfully');
+    res.status(200).json({
+      success: true,
+      message: 'Message sent successfully! I will get back to you soon.',
+      data: {
+        contactId: savedMessage._id,
+        emailSent: true,
+      },
+    });
   } catch (error) {
+    console.error('[SUBMIT-CONTACT] Form submission failed with error:', {
+      message: error?.message,
+      statusCode: error?.statusCode,
+      stack: error?.stack,
+    });
     next(error);
   }
 };
