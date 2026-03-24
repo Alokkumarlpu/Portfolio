@@ -31,6 +31,7 @@ const AnimatedRoutes = () => {
         <Route path="/" element={<AnimatedRoute><Home /></AnimatedRoute>} />
         <Route path="/projects" element={<AnimatedRoute><ProjectsPage /></AnimatedRoute>} />
         <Route path="/admin" element={<AnimatedRoute><AdminDashboard /></AnimatedRoute>} />
+        <Route path="/admin/login" element={<AnimatedRoute><AdminDashboard /></AnimatedRoute>} />
       </Routes>
     </AnimatePresence>
   );
@@ -46,6 +47,8 @@ const ScrollToTop = () => {
 
 const App = () => {
   const [loading, setLoading] = useState(true);
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
 
   useEffect(() => {
     const lenis = new Lenis({
@@ -78,13 +81,13 @@ const App = () => {
             transition={{ duration: 1 }}
             className="relative"
           >
-            <CustomCursor />
+            {!isAdminRoute && <CustomCursor />}
             <ScrollToTop />
-            <Navbar />
+            {!isAdminRoute && <Navbar />}
             <main className="relative z-10">
               <AnimatedRoutes />
             </main>
-            <Footer />
+            {!isAdminRoute && <Footer />}
           </motion.div>
         )}
       </AnimatePresence>

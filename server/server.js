@@ -16,10 +16,49 @@ import experienceRoutes from './routes/experienceRoutes.js';
 import certificateRoutes from './routes/certificateRoutes.js';
 import achievementRoutes from './routes/achievementRoutes.js';
 
+// ==============================================================================
+// ENVIRONMENT VALIDATION
+// ==============================================================================
+const validateEnv = () => {
+  const required = ['MONGO_URI', 'JWT_SECRET', 'CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET'];
+  const missing = required.filter(key => !process.env[key]);
+  
+  if (missing.length > 0) {
+    console.error('❌ CRITICAL: Missing environment variables:', missing);
+    console.error('Set these in your .env file or hosting provider:');
+    missing.forEach(key => console.error(`  - ${key}`));
+    process.exit(1);
+  }
+  
+  console.log('✅ All required environment variables present');
+};
+
+validateEnv();
 connectDB();
 
 const app = express();
 
+// ==============================================================================
+// REQUEST LOGGING MIDDLEWARE
+// ==============================================================================
+app.use((req, res, next) => {
+  const timestamp = new Date().toISOString();
+  console.log(`[${timestamp}] ${req.method} ${req.originalUrl}`);
+  console.log(`  Origin: ${req.get('origin') || 'none'}`);
+  
+  // Log response
+  const originalSend = res.send;
+  res.send = function(data) {
+    console.log(`  Response: ${res.statusCode}`);
+    return originalSend.call(this, data);
+  };
+  
+  next();
+});
+
+// ==============================================================================
+// CORS CONFIGURATION (PRODUCTION-READY)
+// ==============================================================================
 const parseAllowedOrigins = () => {
   const raw = process.env.CORS_ORIGINS || process.env.CLIENT_URL || '';
   const configured = raw
@@ -35,49 +74,71 @@ const parseAllowedOrigins = () => {
     'http://127.0.0.1:5174',
   ];
 
-  return [...new Set([...configured, ...localDefaults])];
+  const allOrigins = [...new Set([...configured, ...localDefaults])];
+  console.log('✅ CORS Allowed origins:', allOrigins);
+  return allOrigins;
 };
 
 const allowedOrigins = parseAllowedOrigins();
 
-const isAllowedVercelPreview = (origin) => {
-  // Allow Vercel preview URLs only if explicitly enabled.
-  if (process.env.ALLOW_VERCEL_PREVIEW !== 'true') return false;
-  return /^https:\/\/[a-zA-Z0-9-]+\.vercel\.app$/.test(origin);
-};
-
 const corsOptions = {
   origin: (origin, callback) => {
     // Allow non-browser requests (Postman/cURL/server-to-server) with no Origin header.
-    if (!origin) return callback(null, true);
+    if (!origin) {
+      console.log('  → No origin header (server-to-server request) → ALLOWED');
+      return callback(null, true);
+    }
 
-    const isAllowed = allowedOrigins.includes(origin) || isAllowedVercelPreview(origin);
-    if (isAllowed) return callback(null, true);
+    const isAllowed = allowedOrigins.includes(origin);
+    if (isAllowed) {
+      console.log(`  → Origin "${origin}" → ALLOWED`);
+      return callback(null, true);
+    }
 
-    return callback(new Error(`CORS blocked for origin: ${origin}`));
+    const errorMsg = `CORS blocked for origin: ${origin}`;
+    console.error(`  → Origin "${origin}" → BLOCKED`);
+    return callback(new Error(errorMsg));
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   credentials: true,
-  optionsSuccessStatus: 204,
+  optionsSuccessStatus: 200, // Some legacy browsers (IE11) choke on 204
+  maxAge: 86400, // 24 hours
 };
 
 app.use(cors(corsOptions));
-app.options(/.*/, cors(corsOptions));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Explicit preflight handling for Express 5
+app.options('*', cors(corsOptions));
 
-// Add health route BEFORE other routes
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
+
+// ==============================================================================
+// HEALTH CHECK ENDPOINTS
+// ==============================================================================
 app.get('/api/health', (req, res) => {
   res.status(200).json({
     status: 'ok',
     message: 'Server is running',
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
-  })
+    environment: process.env.NODE_ENV || 'development',
+    mongodb: process.env.MONGO_URI ? 'configured' : 'missing',
+    cloudinary: process.env.CLOUDINARY_CLOUD_NAME ? 'configured' : 'missing',
+  });
 });
 
-// Routes
+app.get('/api/config', (req, res) => {
+  res.status(200).json({
+    corsOrigins: allowedOrigins,
+    clientUrl: process.env.CLIENT_URL,
+    environment: process.env.NODE_ENV || 'development',
+    port: process.env.PORT,
+  });
+});
+
+// ==============================================================================
+// API ROUTES
+// ==============================================================================
 app.use('/api/projects', projectRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/auth', authRoutes);
@@ -97,27 +158,70 @@ app.get('/api/test-email', async (req, res) => {
 });
 
 app.get('/', (req, res) => {
-  res.send('Portfolio API is running...');
+  res.json({
+    message: 'Portfolio API is running',
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health',
+      config: '/api/config',
+      profile: '/api/profile',
+      projects: '/api/projects',
+      auth: '/api/auth/login',
+      skills: '/api/skills',
+      experience: '/api/experience',
+    }
+  });
 });
 
-// Error handling middleware
+// ==============================================================================
+// ERROR HANDLING MIDDLEWARE (MUST be last)
+// ==============================================================================
 app.use(notFound);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+const server = app.listen(PORT, () => {
+  console.log(`\n╔════════════════════════════════════════════════════════╗`);
+  console.log(`║  🚀 SERVER STARTED SUCCESSFULLY                       ║`);
+  console.log(`╠════════════════════════════════════════════════════════╣`);
+  console.log(`║  PORT: ${PORT}`);
+  console.log(`║  ENV: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`║  CORS ORIGINS: ${allowedOrigins.length} configured`);
+  console.log(`║  MONGODB: ${process.env.MONGO_URI ? '✅ Connected' : '❌ Missing'}`);
+  console.log(`║  CLOUDINARY: ${process.env.CLOUDINARY_CLOUD_NAME ? '✅ Configured' : '❌ Missing'}`);
+  console.log(`╠════════════════════════════════════════════════════════╣`);
+  console.log(`║  Test endpoints:                                       ║`);
+  console.log(`║  - GET  http://localhost:${PORT}/api/health          ║`);
+  console.log(`║  - GET  http://localhost:${PORT}/api/config          ║`);
+  console.log(`║  - GET  http://localhost:${PORT}/api/profile         ║`);
+  console.log(`║  - POST http://localhost:${PORT}/api/auth/login      ║`);
+  console.log(`╚════════════════════════════════════════════════════════╝\n`);
 
-  // Keep-alive ping for Render free tier
-  const renderUrl = process.env.RENDER_URL;
-  if (renderUrl) {
-    setInterval(async () => {
+  // Keep-alive ping for Render free tier (prevents spin-down)
+  if (process.env.RENDER_URL) {
+    const keepAliveInterval = setInterval(async () => {
       try {
-        await fetch(`${renderUrl}/api/health`);
-        console.log('Keep-alive ping sent ✅');
+        const response = await fetch(`${process.env.RENDER_URL}/api/health`);
+        if (response.ok) {
+          console.log(`[${new Date().toISOString()}] Keep-alive ping sent ✅`);
+        }
       } catch (err) {
-        console.log('Ping failed:', err.message);
+        console.error(`[${new Date().toISOString()}] Keep-alive ping failed:`, err.message);
       }
-    }, 14 * 60 * 1000);
+    }, 14 * 60 * 1000); // Every 14 minutes to prevent Render spin-down
+    
+    // Clean up on server shutdown
+    server.on('close', () => clearInterval(keepAliveInterval));
   }
 });
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, shutting down gracefully...');
+  server.close(() => {
+    console.log('Server closed');
+    process.exit(0);
+  });
+});
+
+export default app;
