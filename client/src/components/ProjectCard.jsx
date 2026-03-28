@@ -22,11 +22,24 @@ const localProjectImageByTitle = {
 
 const normalizeText = (value = '') => String(value).trim().toLowerCase();
 
+const convertGoogleDriveImageUrl = (url) => {
+  const raw = String(url || '').trim();
+  if (!raw || !raw.includes('drive.google.com')) return raw;
+
+  // Supports common Drive formats: /file/d/<id>/view, open?id=<id>, uc?id=<id>
+  const match = raw.match(/\/d\/([a-zA-Z0-9_-]+)/) || raw.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (match?.[1]) {
+    return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`;
+  }
+
+  return raw;
+};
+
 const resolveProjectImage = (project) => {
   const raw = String(project?.image || '').trim();
 
   if (raw) {
-    if (/^https?:\/\//i.test(raw)) return raw;
+    if (/^https?:\/\//i.test(raw)) return convertGoogleDriveImageUrl(raw);
     if (raw.startsWith('/')) return raw;
     if (raw.startsWith('projects/')) return `/${raw}`;
     return `/projects/${raw}`;
